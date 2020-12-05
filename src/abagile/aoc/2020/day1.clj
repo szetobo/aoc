@@ -34,3 +34,17 @@
                           (filter #(= 2020 (apply + %)))
                           first
                           (reduce *))))
+
+;; smart and clean solution copy from lambda island
+(first
+  (for [x input
+        y input
+        :when (= 2020 (+ x y))]
+   (* x y)))
+
+(first
+  (for [x input
+        y input
+        z input
+        :when (= 2020 (+ x y z))]
+   (* x y z)))
