@@ -1,4 +1,4 @@
-(ns abagile.aoc.2020.day8
+(ns abagile.aoc.2020.day9
   (:gen-class)
   (:require
     [clojure.java.io :as io]
