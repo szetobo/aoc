@@ -1,27 +1,28 @@
 (ns abagile.aoc.2020.day6
   (:gen-class)
   (:require
-    [clojure.java.io :as io]
+    [abagile.aoc.util :as util]
     [clojure.set :as s]
     [clojure.string :as cs]))
 
-(defn input [] (->> (cs/split (slurp (io/resource "day6.txt")) #"\n\n")
-                    (map cs/split-lines)))
+(def input (->> (util/read-input-split "2020/day6.txt" #"\n\n")
+                (map cs/split-lines)))
 
-(comment
-  (->> (input)
-       count))
+(defn part1 []
+  (->> input
+       ; (take 3)
+       (map #(set (apply str %)))
+       (map count)
+       (reduce +)))
+
+(defn part2 []
+  (->> input
+       ; (take 10)
+       (map #(map set %))
+       (map #(apply s/intersection %))
+       (map count)
+       (reduce +)))
 
 (defn -main [& _]
-  (println "part 1:" (->> (input)
-                          ; (take 3)
-                          (map #(set (apply str %)))
-                          (map count)
-                          (reduce +)))
-
-  (println "part 2:" (->> (input)
-                          ; (take 10)
-                          (map #(map set %))
-                          (map #(apply s/intersection %))
-                          (map count)
-                          (reduce +))))
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))

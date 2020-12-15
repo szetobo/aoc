@@ -1,13 +1,12 @@
 (ns abagile.aoc.2020.day1
   (:gen-class)
   (:require
-    [clojure.java.io :as io]
+    [abagile.aoc.util :as util]
     ; [clojure.math.combinatorics :as comb]
-    [clojure.set :as s]
-    [clojure.string :as cs]))
+    [clojure.set :as s]))
 
-(def input (->> (cs/split-lines (slurp (io/resource "day1.txt")))
-                (map read-string)))
+(def input (->> (util/read-input-split-lines "2020/day1.txt")
+                (map util/parse-int)))
 
 ;; simplified version, poor-man combinations
 (defn combinations [lst n]
@@ -23,28 +22,34 @@
                   (conj y head))
                 (combinations tail n))))))
 
-(prn (combinations [1 2 3 4] 3))
+(comment
+  (prn (combinations [1 2 3 4] 3)))
 
-(defn -main [& _]
-  (println "part 1:" (reduce * (s/intersection
-                                 (into #{} input)
-                                 (into #{} (map #(- 2020 %) input))))) 
+(defn part1 []
+  (time (reduce * (s/intersection
+                    (into #{} input)
+                    (into #{} (map #(- 2020 %) input))))))
 
-  (println "part 2:" (->> (combinations input 3)
-                          (filter #(= 2020 (apply + %)))
-                          first
-                          (reduce *))))
+(defn part2 []
+  (time (->> (combinations input 3)
+            (filter #(= 2020 (apply + %)))
+            first
+            (reduce *))))
 
 ;; smart and clean solution copy from lambda island
-(first
-  (for [x input
-        y input
-        :when (= 2020 (+ x y))]
-   (* x y)))
+(defn part2x []
+  (time (first (for [x input
+                     y input
+                     :when (= 2020 (+ x y))]
+                (* x y)))))
 
-(first
-  (for [x input
-        y input
-        z input
-        :when (= 2020 (+ x y z))]
-   (* x y z)))
+(defn part2x []
+  (time (first (for [x input
+                     y input
+                     z input
+                     :when (= 2020 (+ x y z))]
+                (* x y z)))))
+
+(defn -main [& _]
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))

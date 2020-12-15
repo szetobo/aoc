@@ -1,10 +1,12 @@
 (ns abagile.aoc.2020.day9
   (:gen-class)
   (:require
-    [clojure.java.io :as io]
-    [clojure.string :as cs]))
+    [abagile.aoc.util :as util]))
 
-(def input [35 20 15 25 47 40 62 55 65 95 102 117 150 182 127 219 299 277 309 576])
+(def input (->> (util/read-input-split-lines "2020/day9.txt")
+                (mapv util/parse-long)))
+
+(def sample [35 20 15 25 47 40 62 55 65 95 102 117 150 182 127 219 299 277 309 576])
 
 (defn weakness1 [p-count input]
   (loop [lst input]
@@ -23,7 +25,7 @@
         (recur (subvec lst 1))))))
 
 (comment
-  (weakness1 5 input))
+  (weakness1 5 sample))
 
 (defn weakness2 [attack input]
   (loop [lst input]
@@ -40,12 +42,18 @@
         (recur (subvec lst 1))))))
 
 (comment
-  (weakness2 127 input))
+  (->> (weakness2 (weakness1 5 sample) sample)
+       ((juxt #(apply max %) #(apply min %)))
+       (apply +)))
+
+
+(defn part1 []
+  (time (weakness1 25 input)))
+
+(defn part2 []
+  (->> (weakness2 (weakness1 25 input) input)
+       (#(+ (apply max %) (apply min %)))))
 
 (defn -main [& _]
-  (println "part 1:" (->> (mapv read-string (cs/split-lines (slurp (io/resource "day9.txt"))))
-                          (#(weakness1 25 %))))
-
-  (println "part 2:" (->> (mapv read-string (cs/split-lines (slurp (io/resource "day9.txt"))))
-                          (#(weakness2 1492208709 %))
-                          (#(+ (apply max %) (apply min %))))))
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))

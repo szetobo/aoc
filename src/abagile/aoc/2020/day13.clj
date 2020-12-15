@@ -1,7 +1,5 @@
 (ns abagile.aoc.2020.day13
   (:gen-class))
-; (:require))
-;   [clojure.string :as cs]))
 
 (def sample ["939"
              "7,13,x,x,59,x,31,19"])
@@ -107,9 +105,12 @@
   (bus-align sample4)
   (bus-align (second input)))
 
-(defn -main [& _]
-  (println "part 1:"
-           (->> (next-bus input) first (apply *)))
+(defn part1 []
+  (time (->> (next-bus input) first (apply *))))
 
-  (println "part 2:"
-           (bus-align (second input))))
+(defn part2 []
+  (time (bus-align (second input))))
+
+(defn -main [& _]
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))

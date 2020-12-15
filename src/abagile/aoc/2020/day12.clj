@@ -1,8 +1,9 @@
 (ns abagile.aoc.2020.day12
   (:gen-class)
   (:require
-    [clojure.java.io :as io]
-    [clojure.string :as cs]))
+    [abagile.aoc.util :as util]))
+
+(def input (->> (util/read-input-split-lines "2020/day12.txt")))
 
 (def sample ["F10" "N3" "F7" "R90" "F11"])
 
@@ -63,19 +64,22 @@
        :pos
        (#(let [[x y] %] (+ (abs x) (abs y))))))
 
-(defn -main [& _]
-  (println "part 1:"
-           (->> (cs/split-lines (slurp (io/resource "day12.txt")))
-                (map #(->> % (re-matches #"^([NSEWLRF])(\d+)$") rest vec))
-                (map #(-> % (update 1 read-string)))
-                move1
-                :pos
-                (#(let [[x y] %] (+ (abs x) (abs y))))))
+(defn part1 []
+  (->> input
+       (map #(->> % (re-matches #"^([NSEWLRF])(\d+)$") rest vec))
+       (map #(-> % (update 1 read-string)))
+       move1
+       :pos
+       (#(let [[x y] %] (+ (abs x) (abs y))))))
 
-  (println "part 2:"
-           (->> (cs/split-lines (slurp (io/resource "day12.txt")))
-                (map #(->> % (re-matches #"^([NSEWLRF])(\d+)$") rest vec))
-                (map #(-> % (update 1 read-string)))
-                move2
-                :pos
-                (#(let [[x y] %] (+ (abs x) (abs y)))))))
+(defn part2 []
+  (->> input
+       (map #(->> % (re-matches #"^([NSEWLRF])(\d+)$") rest vec))
+       (map #(-> % (update 1 read-string)))
+       move2
+       :pos
+       (#(let [[x y] %] (+ (abs x) (abs y))))))
+
+(defn -main [& _]
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))

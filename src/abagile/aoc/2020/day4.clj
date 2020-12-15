@@ -1,17 +1,13 @@
 (ns abagile.aoc.2020.day4
   (:gen-class)
   (:require
-    [clojure.java.io :as io]
-    [clojure.string :as cs]
+    [abagile.aoc.util :as util]
     [malli.core :as m]
     [malli.error :as me]))
 
-(defn input []
-  (->> (cs/split (slurp (io/resource "day4.txt")) #"\n\n")
-       (map #(re-seq #"(byr|iyr|eyr|hgt|hcl|ecl|pid|cid):([^\s]+)" %))
-       (map #(into (hash-map) (map (comp vec rest) %)))))
-
-(def read-int (fnil read-string "0"))
+(def input (->> (util/read-input-split "2020/day4.txt" #"\n\n")
+                (map #(re-seq #"(byr|iyr|eyr|hgt|hcl|ecl|pid|cid):([^\s]+)" %))
+                (map #(into (hash-map) (map (comp vec rest) %)))))
 
 (defn valid? [part]
   (fn [m]
@@ -20,39 +16,35 @@
         (every? some? [byr iyr eyr hgt hcl ecl pid])
         (if (= part 1) true
           (and
-            (let [byr (re-matches #"\d+" byr)] (<= 1920 (read-int byr) 2002))
-            (let [iyr (re-matches #"\d+" iyr)] (<= 2010 (read-int iyr) 2020))
-            (let [eyr (re-matches #"\d+" eyr)] (<= 2020 (read-int eyr) 2030))
+            (let [byr (re-matches #"\d+" byr)] (<= 1920 (util/parse-int byr) 2002))
+            (let [iyr (re-matches #"\d+" iyr)] (<= 2010 (util/parse-int iyr) 2020))
+            (let [eyr (re-matches #"\d+" eyr)] (<= 2020 (util/parse-int eyr) 2030))
             (let [[_ cm in] (re-matches #"(\d{3})cm|(\d{2})in" hgt)]
-              (or (<= 150 (read-int cm) 193)
-                  (<= 59  (read-int in) 76)))
+              (or (<= 150 (util/parse-int cm) 193)
+                  (<= 59  (util/parse-int in) 76)))
             (re-matches #"#[0-9|a-f]{6}" hcl)
             (re-matches #"amb|blu|brn|gry|grn|hzl|oth" ecl)
             (re-matches #"\d{9}" pid)))))))
 
-(defn -main [& _]
-  (println "part 1:" (->> (input)
-                          (filter (valid? 1))
-                          count))
+(defn part1 []
+  (time (->> (count (filter (valid? 1) input)))))
 
-  (println "part 2:" (->> (input)
-                          ; (take 10)
-                          (filter (valid? 2))
-                          count)))
+(defn part2 []
+  (time (->> (count (filter (valid? 2) input)))))
 
 (def schema
   [:map
    ["byr" [:fn {:error/message "must be between 1920 and 2002"}
-           #(let [v (re-matches #"^\d{4}$" %)] (<= 1920 (read-int v) 2002))]]
+           #(let [v (re-matches #"^\d{4}$" %)] (<= 1920 (util/parse-int v) 2002))]]
    ["iyr" [:fn {:error/message "must be between 2010 and 2020"}
-           #(let [v (re-matches #"^\d{4}$" %)] (<= 2010 (read-int v) 2020))]]
+           #(let [v (re-matches #"^\d{4}$" %)] (<= 2010 (util/parse-int v) 2020))]]
    ["eyr" [:fn {:error/message "must be between 2020 and 2030"}
-           #(let [v (re-matches #"^\d{4}$" %)] (<= 2020 (read-int v) 2030))]]
+           #(let [v (re-matches #"^\d{4}$" %)] (<= 2020 (util/parse-int v) 2030))]]
    ["hgt" [:fn {:error/message "must be between 150cm and 193cm, or 59in and 76in"}
            #(let [[_ v unit] (re-matches #"(\d+)(cm|in)" %)]
               (if (= "cm" unit)
-                (<= 150 (read-int v) 193)
-                (<= 59  (read-int v) 76)))]]
+                (<= 150 (util/parse-int v) 193)
+                (<= 59  (util/parse-int v) 76)))]]
    ["hcl" [:re {:error/message "must be a valid hex color string, e.g #c0c0c0"}
            #"^#[0-9|a-f]{6}$"]]
    ["ecl" [:enum {:error/message "must be amb|blu|brn|gry|grn|hzl|oth"}
@@ -61,16 +53,20 @@
            #"^\d{9}$"]]])
 
 (defn malli-validate []
-  (->> (input)
+  (->> input
        ; (take 10)
        ; (map (comp me/humanize (partial m/explain schema))))
        (filter #(m/validate schema %))
        count))
 
 (defn malli-explain []
-  (->> (input)
+  (->> input
        (take 10)
        (map (comp
               ; identity
               me/humanize
               (partial m/explain schema)))))
+
+(defn -main [& _]
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))

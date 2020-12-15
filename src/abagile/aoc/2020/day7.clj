@@ -1,11 +1,10 @@
 (ns abagile.aoc.2020.day7
   (:gen-class)
   (:require
-    [clojure.java.io :as io]
-    [clojure.set :as s]
-    [clojure.string :as cs]))
+    [abagile.aoc.util :as util]
+    [clojure.set :as s]))
 
-(defn input [] (->> (cs/split-lines (slurp (io/resource "day7.txt")))))
+(def input (->> (util/read-input-split-lines "2020/day7.txt")))
 
 (comment
   (->> (input)
@@ -16,7 +15,7 @@
     (reduce
       (fn [res [_ n b2]]
         (-> res
-          (update-in [:content b1] (fnil #(assoc % b2 (Integer/parseInt n)) {}))
+          (update-in [:content b1] (fnil #(assoc % b2 (util/parse-int n)) {}))
           (update-in [:container b2] (fnil #(conj % b1) #{}))))
       m
       (re-seq #"(\d+) (.*?) bag[s]?" rule))
@@ -33,12 +32,17 @@
       (reduce + (reduce + (vals bs)) (for [[b' c] bs] (* c (bags-contain b' m))))
       0)))
 
-(defn -main [& _]
-  (println "part 1:" (->> (input)
-                          (reduce build-map {})
-                          (find-container "shiny gold")
-                          (count)))
+(defn part1 []
+  (time (->> input
+            (reduce build-map {})
+            (find-container "shiny gold")
+            (count))))
 
-  (println "part 2:" (->> (input)
-                          (reduce build-map {})
-                          (bags-contain "shiny gold"))))
+(defn part2 []
+  (time (->> input
+            (reduce build-map {})
+            (bags-contain "shiny gold"))))
+
+(defn -main [& _]
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))
