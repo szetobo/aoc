@@ -3,6 +3,8 @@
   (:require
     [abagile.aoc.util :as util]
     ; [clojure.math.combinatorics :as comb]
+    [clojure.core.logic :as l]
+    [clojure.core.logic.fd :as fd]
     [clojure.set :as s]))
 
 (def input (->> (util/read-input-split-lines "2020/day1.txt")
@@ -53,3 +55,20 @@
 (defn -main [& _]
   (println "part 1:" (part1))
   (println "part 2:" (part2)))
+
+(comment
+  (l/run* [q]
+          (l/fresh [x y]
+                   (l/membero x input)
+                   (l/membero y input)
+                   (fd/+ x y 2020)
+                   (l/== q [x y])))
+
+  (let [vars (repeatedly 3 l/lvar)
+        [x y z] vars]
+    (l/run 1 [q]
+      (l/== q vars)
+      (l/membero x input)
+      (l/membero y input)
+      (l/membero z input)
+      (fd/eq (= (+ x y z) 2020)))))
