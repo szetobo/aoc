@@ -35,9 +35,9 @@
 (defn make-ast
   "Parse a string into a list of numbers, ops, and lists"
   [s]
-  (-> (format "'(%s)" s)
+  (-> (format "(%s)" s)
       (.replaceAll "([*+-/])" " $1 ")
-      load-string
+      read-string
       add-parens))
 
 (def ops {'* *
@@ -54,6 +54,7 @@
 (def evaluate #(eval-ast (make-ast %)))
 
 (comment
+  (make-ast (first sample))
   (evaluate (first sample))
   (evaluate (second sample)))
 
