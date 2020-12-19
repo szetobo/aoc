@@ -2,6 +2,7 @@
   (:gen-class)
   (:require
     [abagile.aoc.util :as util]
+    [clojure.spec.alpha :as s]
     [malli.core :as m]
     [malli.error :as me]))
 
@@ -31,6 +32,26 @@
 
 (defn part2 []
   (time (->> (count (filter (valid? 2) input)))))
+
+(s/def ::byr (s/and string? #(<= 1920 (util/parse-int %) 2002)))
+(s/def ::iyr (s/and string? #(<= 2010 (util/parse-int %) 2020)))
+(s/def ::eyr (s/and string? #(<= 2020 (util/parse-int %) 2030)))
+(s/def ::hgt (s/and string? #(let [[_ cm in] (re-matches #"(\d{3})cm|(\d{2})in" %)]
+                               (or (<= 150 (util/parse-int cm) 193)
+                                   (<= 59  (util/parse-int in) 76)))))
+(s/def ::hcl (s/and string? (partial re-matches #"#[0-9|a-f]{6}")))
+(s/def ::ecl (s/and string? (partial re-matches #"amb|blu|brn|gry|grn|hzl|oth")))
+(s/def ::pid (s/and string? (partial re-matches #"\d{9}")))
+(s/def ::cid (s/and string?))
+
+(s/def ::passport (s/keys :req-un [::byr ::iyr ::eyr ::hgt ::hcl ::ecl ::pid]
+                          :opt-un [::cid]))
+
+(defn spec-validate []
+  (->> input
+       (map (fn [m] (reduce-kv #(assoc %1 (keyword %2) %3) {} m)))
+       (filter #(s/valid? ::passport %))
+       count))
 
 (def schema
   [:map
