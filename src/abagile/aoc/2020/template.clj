@@ -3,7 +3,7 @@
   (:require
     [abagile.aoc.util :as util]))
 
-(def input (->> (util/read-input-split-lines "2020/day.txt")))
+; (def input (->> (util/read-input-split-lines "2020/day.txt")))
 
 (def sample [])
 
