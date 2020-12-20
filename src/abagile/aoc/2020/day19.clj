@@ -63,24 +63,18 @@
 (defn part1 []
   (time (let [[rules msgs] input1
               msgs (cs/split-lines msgs)
-              parser (insta/parser (-> rules
-                                       (cs/replace #":" "=")
-                                       (cs/replace #"\d+" #(str \R %))))]
-         (->> (map parser msgs)
-              (filter vector?)
-              count))))
+              parser (insta/parser (-> rules (cs/replace #"\d+" #(str \R %))))]
+          (->> (map parser msgs)
+               (filter vector?)
+               count))))
 
 (defn part2 []
   (time (let [[rules msgs] input2
               msgs (cs/split-lines msgs)
-              parser (insta/parser (-> rules
-                                       (cs/replace #":" "=")
-                                       (cs/replace #"\d+" #(str \R %))))]
-         (->> (map parser msgs)
-              (filter vector?)
-              count))))
-
-(defn part2 [])
+              parser (insta/parser (-> rules (cs/replace #"\d+" #(str \R %))))]
+          (->> (map parser msgs)
+               (filter vector?)
+               count))))
 
 (defn -main [& _]
   (println "part 1:" (part1))
