@@ -1,50 +1,20 @@
-# abagile.aoc
+# AOC solutions
 
-FIXME: my new application.
-
-## Installation
-
-Download from https://github.com/abagile/abagile.aoc.
+Advent of code solutions in Clojure
 
 ## Usage
 
-FIXME: explanation
+Run the solution directly:
 
-Run the project directly:
+    $ clj -X abagile.aoc.2021.day01/-main
 
-    $ clojure -m abagile.aoc
+Run nrepl for development:
 
-Run the project's tests (they'll fail until you edit them):
-
-    $ clojure -A:test:runner
-
-Build an uberjar:
-
-    $ clojure -A:uberjar
-
-Run that uberjar:
-
-    $ java -jar abagile.aoc.jar
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
+    $ clj -M:nrepl
 
 ## License
 
-Copyright © 2020 Ubuntu
+Copyright © 2020
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
