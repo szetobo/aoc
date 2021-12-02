@@ -91,3 +91,27 @@
 
 (comment
   (-main))
+
+(defrecord Loc
+  [hr dp aim cmd])
+
+(defn make-loc
+  [{:keys [hr dp aim cmd] :or {hr 0 dp 0 aim 0 cmd []} :as params}]
+  (map->Loc (assoc params :hr hr :dp dp :aim aim :cmd cmd)))
+
+(defn move-loc
+  [loc [dir X :as cmd]]
+  (let [loc' (assoc loc :cmd cmd)]
+    (case dir
+      :forward (make-loc (update loc' :hr + X))
+      :down    (make-loc (update loc' :dp + X))
+      :up      (make-loc (update loc' :dp - X)))))
+
+(comment
+  (-> (make-loc {})
+      (move-loc [:forward 1])
+      (move-loc [:down 5])
+      (move-loc [:up 3]))
+  (reductions move-loc (make-loc {}) sample-input)
+  (take 10 (reductions move-loc (make-loc {}) input))
+  (time (reduce move-loc (make-loc {}) input)))
