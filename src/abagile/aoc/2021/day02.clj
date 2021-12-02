@@ -3,6 +3,13 @@
   (:require
     [abagile.aoc.util :as util]))
 
+(def sample-input [[:forward 5]
+                   [:down 5]
+                   [:forward 8]
+                   [:up 3]
+                   [:down 8]
+                   [:forward 2]])
+
 (def input (->> (util/read-input-split-lines "2021/day02.txt")
                 (map #(re-matches #"(forward|down|up) (\d+)" %))
                 (map (fn [[_ k v]] [(keyword k) (util/parse-int v)]))))
@@ -22,15 +29,28 @@
         (= dir :down) (+ unit)
         (= dir :up)   (- unit))})
 
+(defn move'
+  [[x y] [dir unit]]
+  (case dir
+    :forward [(+ x unit) y]
+    :down    [x (+ y unit)]
+    :up      [x (- y unit)]))
+
+(defn move''
+  [{:keys [x y] :or {x 0 y 0}} [dir unit]]
+  (case dir
+    :forward {:x (+ x unit) :y y}
+    :down    {:x x          :y (+ y unit)}
+    :up      {:x x          :y (- y unit)}))
+
 (comment
   (move {} [:forward 1])
   (move {} [:down 1])
-  (reduce move {} [[:forward 5]
-                   [:down 5]
-                   [:forward 8]
-                   [:up 3]
-                   [:down 8]
-                   [:forward 2]]))
+  (reduce move {} sample-input)
+  (move' [0 0] [:forward 1])
+  (reduce move' [0 0] sample-input)
+  (move'' {} [:forward 1])
+  (reduce move'' {} sample-input))
 
 (defn part1
   []
@@ -46,19 +66,23 @@
    :aim (cond-> aim
           (= dir :down) (+ unit)
           (= dir :up)   (- unit))})
+
+(defn move2''
+  [{:keys [x y aim] :or {x 0 y 0 aim 0}} [dir unit]]
+  (case dir
+    :forward {:x (+ x unit) :y (+ y (* aim unit)) :aim aim}
+    :down    {:x x          :y y                  :aim (+ aim unit)}
+    :up      {:x x          :y y                  :aim (- aim unit)}))
+
 (comment
   (move2 {} [:forward 1])
   (move2 {} [:down 1])
-  (reduce move2 {} [[:forward 5]
-                    [:down 5]
-                    [:forward 8]
-                    [:up 3]
-                    [:down 8]
-                    [:forward 2]]))
+  (reduce move2 {} sample-input)
+  (reduce move2'' {} sample-input))
 
 (defn part2
   []
-  (time (let [{:keys [x y]} (reduce move2 {} input)]
+  (time (let [{:keys [x y]} (reduce move2'' {} input)]
           (* x y))))
 
 (defn -main [& _]
