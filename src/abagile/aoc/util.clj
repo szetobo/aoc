@@ -13,5 +13,4 @@
 
 (def parse-long #(if (nil? %) 0 (Long/parseLong %)))
 
-(defn binary-val [coll]
-  (reduce #(+ (* %1 2) (- (int %2) (int \0))) 0 coll))
+(def binary-val #(Integer/parseInt (apply str %) 2))
