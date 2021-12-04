@@ -17,9 +17,6 @@
           (remove cs/blank?)
           (map #(->> % (re-seq #"\d+") (map read-string))))]))
 
-(parse sample-input)
-(parse input)
-
 ;; physically board is just a sequence of 25 numbers, but conceptually it is a 5x5 matrix
 
 (def mark-cell #(+ % 1000))
