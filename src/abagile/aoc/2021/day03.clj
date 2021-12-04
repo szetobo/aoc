@@ -136,3 +136,48 @@
   (most-common-bit (parse input) 0)
   (part1' 12 (parse input))
   (* (rating 12 most-common-bit (parse input)) (rating 12 (complement most-common-bit) (parse input))))
+
+;; =======================================================
+;; my second attempt with updated knowledge of the problem
+;; =======================================================
+
+(defn parse* [s] (map #(vec (re-seq #"[01]" %)) s))
+
+(defn gamma-rate*
+  [xs i]
+  (let [freqs (frequencies (map #(get % i) xs))]
+    (max-key #(get freqs % 0) "0" "1")))
+
+(defn epsilon-rate*
+  [xs i]
+  (case (gamma-rate* xs i)
+    "0" "1"
+    "1" "0"))
+
+(defn part1*
+  [xs]
+  (let [no-of-bits (count (first xs))
+        gamma      (util/binary-val (map #(gamma-rate* xs %) (range no-of-bits)))
+        mask       (util/binary-val (repeat no-of-bits "1"))
+        epsilon    (bit-xor gamma mask)]
+    (* gamma epsilon)))
+
+(defn rating*
+  [fx xs]
+  (-> (loop [i 0 [head & tail :as xs] xs]
+        (if-not (seq tail)
+          head
+          (let [result (fx xs i)
+                xs'    (filter #(= (get % i) result) xs)]
+            (recur (inc i) xs'))))
+      util/binary-val))
+
+(def o2-rating*  (partial rating* gamma-rate*))
+(def co2-rating* (partial rating* epsilon-rate*))
+
+(comment
+  (time (part1* (parse* input)))
+  (rating* gamma-rate* (parse* input))
+  (rating* epsilon-rate* (parse* input))
+  (time (let [xs (parse* input)]
+          (* (o2-rating* xs) (co2-rating* xs)))))
