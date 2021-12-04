@@ -14,3 +14,7 @@
 (def parse-long #(if (nil? %) 0 (Long/parseLong %)))
 
 (def binary-val #(Integer/parseInt (apply str %) 2))
+
+(def transpose #(apply map list %))
+
+(def spy #(doto %  prn))

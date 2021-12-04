@@ -43,21 +43,27 @@
   (util/binary-val ["1" "1" "0" "1"])
   (util/binary-val "1101")
   (->> sample-input
-       (apply map list)
+       util/spy
+       util/transpose
+       util/spy
        (map #(map str %))
+       util/spy
        (map gamma-epsilon-rate)
-       (apply map list)
-       (map util/binary-val)))
+       util/spy
+       util/transpose
+       util/spy
+       (map util/binary-val)
+       util/spy))
 
 (defn part1
   []
-  (time (->> input
-             (apply map list)
-             (map #(map str %))
-             (map gamma-epsilon-rate)
-             (apply map list)
-             (map util/binary-val)
-             (apply *))))
+  (time (let [[gamma epsilon] (->> input
+                                   util/transpose
+                                   (map #(map str %))
+                                   (map gamma-epsilon-rate)
+                                   util/transpose
+                                   (map util/binary-val))]
+          (* gamma epsilon))))
 
 (defn calc-rating
   [fx idx [fst & rst :as items]]
