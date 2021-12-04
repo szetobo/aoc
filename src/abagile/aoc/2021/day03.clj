@@ -17,7 +17,7 @@
    "00010"
    "01010"])
 
-(def input (->> (util/read-input-split-lines "2021/day03.txt")))
+(def input (util/read-input-split-lines "2021/day03.txt"))
 
 (defn gamma-rate
   [coll]
@@ -91,3 +91,42 @@
 
 (comment
   (-main))
+
+;; ==========================================================================================================
+;; copy the implmenetation from https://github.com/callum-oakley/advent-of-code/blob/main/src/aoc/2021/03.clj
+;; just try to understood & learn the way of thinking from others
+;; ==========================================================================================================
+
+(defn parse [s] (map #(Integer/parseInt % 2) s))
+
+(defn most-common-bit [xs i]
+  (let [freq (frequencies (map #(bit-test % i) xs))]
+    (max-key #(get freq % 0) false true)))
+
+(defn part1'
+  [no-of-bits xs]
+  (->> (reduce (fn [[gamma epsilon] i]
+                 (if (most-common-bit xs i)
+                   [(bit-set gamma i) epsilon]
+                   [gamma             (bit-set epsilon i)]))
+         [0 0]
+         (range no-of-bits))
+       (apply *)))
+
+(defn rating
+  [no-of-bits fx xs]
+  (loop [i (dec no-of-bits) [head & tail :as xs] xs]
+    (if-not (seq tail)
+      head
+      (let [target (fx xs i)]
+        (recur (dec i) (filter #(= (bit-test % i) target) xs))))))
+
+(defn part2'
+  [no-of-bits xs]
+  (* (rating no-of-bits most-common-bit xs)
+    (rating no-of-bits (complement most-common-bit) xs)))
+
+(comment
+  (most-common-bit (parse input) 0)
+  (part1' 12 (parse input))
+  (* (rating 12 most-common-bit (parse input)) (rating 12 (complement most-common-bit) (parse input))))
