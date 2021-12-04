@@ -2,6 +2,7 @@
   (:gen-class)
   (:require
     [abagile.aoc.util :as util]
+    [clojure.set :as cset]
     [clojure.string :as cs]))
 
 (def sample-input (util/read-input "2021/day04.sample.txt"))
@@ -18,6 +19,8 @@
 
 (parse sample-input)
 (parse input)
+
+;; physically board is just a sequence of 25 numbers, but conceptually it is a 5x5 matrix
 
 (def mark-cell #(+ % 1000))
 
@@ -83,3 +86,56 @@
 
 (comment
   (-main))
+
+
+;; =====================================================================================
+;; copy the implementation from https://github.com/motform/advent-of-clojure/blob/master/src/advent-of-clojure/2021/04.clj
+;; just try to understood & learn the way of thinking from others
+;; basically the solution using logic programming to check bingo & calculate board score
+;; =====================================================================================
+
+(defn transform-board
+  [boards]
+  (map
+    #(let [rows  (partition 5 %)
+           cols  (util/transpose rows)]
+       (concat (map set rows) (map set cols)))
+    boards))
+
+(defn parse'
+  [s]
+  (let [[nos boards] (parse s)]
+    [nos (transform-board boards)]))
+
+(defn winner-board
+  [nos board]
+  (when (some #(cset/superset? (set nos) %) board) board))
+
+(defn calc-score'
+  [nos board n]
+  (* n (apply + (cset/difference (apply cset/union (take 5 board)) nos))))
+
+(defn bingo
+  [nos boards]
+  (loop [nums #{} [n & nos] nos]
+    (let [nums (conj nums n)]
+      (if-let [winner (some #(winner-board nums %) boards)]
+        (calc-score' nums winner n)
+        (recur nums nos)))))
+
+(defn last-bingo
+  [nos boards]
+  (loop [nums #{} boards boards [n & nos] nos]
+    (let [nums     (conj nums n)
+          filtered (remove #(winner-board nums %) boards)]
+      (if (empty? filtered)
+        (calc-score' nums (first boards) n)
+        (recur nums filtered nos)))))
+
+(comment
+  (map #(winner-board [13 22 17 0 11] %) (last (parse' sample-input)))
+  (parse' sample-input)
+  (apply bingo (parse' sample-input))
+  (apply last-bingo (parse' sample-input))
+  (time (apply bingo (parse' input)))
+  (time (apply last-bingo (parse' input))))
