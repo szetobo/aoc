@@ -112,27 +112,54 @@
   [nos board n]
   (* n (apply + (cset/difference (apply cset/union (take 5 board)) nos))))
 
-(defn bingo
-  [nos boards]
-  (loop [nums #{} [n & nos] nos]
-    (let [nums (conj nums n)]
-      (if-let [winner (some #(winner-board nums %) boards)]
-        (calc-score' nums winner n)
-        (recur nums nos)))))
+;; (defn bingo
+;;   [nos boards]
+;;   (loop [nums #{} [n & nos] nos]
+;;     (let [nums (conj nums n)]
+;;       (if-let [winner (some #(winner-board nums %) boards)]
+;;         (calc-score' nums winner n)
+;;         (recur nums nos)))))
 
-(defn last-bingo
-  [nos boards]
-  (loop [nums #{} boards boards [n & nos] nos]
-    (let [nums     (conj nums n)
-          filtered (remove #(winner-board nums %) boards)]
-      (if (empty? filtered)
-        (calc-score' nums (first boards) n)
-        (recur nums filtered nos)))))
+;; (defn last-bingo
+;;   [nos boards]
+;;   (loop [nums #{} boards boards [n & nos] nos]
+;;     (let [nums     (conj nums n)
+;;           filtered (remove #(winner-board nums %) boards)]
+;;       (if (empty? filtered)
+;;         (calc-score' nums (first boards) n)
+;;         (recur nums filtered nos)))))
+
+;; =====================================================================================
+;; copy the play implementation from https://github.com/callum-oakley/advent-of-code/blob/main/src/aoc/2021/04.clj
+;; track no. of moves & winning score individually of each board,
+;; then apply min-key/max-key to find first/last winner
+;; =====================================================================================
+
+(defn play
+  [nos board]
+  (loop [moves 0 nums #{} [n & nos] nos]
+    (let [nums (conj nums n)]
+      (if (winner-board nums board)
+        {:moves moves
+         :score (calc-score' nums board n)}
+        (recur (inc moves) nums nos)))))
+
+(defn part1'
+  [[nos boards]]
+  (time (->> (map #(play nos %) boards) (apply min-key :moves) :score)))
+
+(defn part2'
+  [[nos boards]]
+  (time (->> (map #(play nos %) boards) (apply max-key :moves) :score)))
 
 (comment
   (map #(winner-board [13 22 17 0 11] %) (last (parse' sample-input)))
   (parse' sample-input)
-  (apply bingo (parse' sample-input))
-  (apply last-bingo (parse' sample-input))
-  (time (apply bingo (parse' input)))
-  (time (apply last-bingo (parse' input))))
+  (part1' (parse' sample-input))
+  (part2' (parse' sample-input))
+  (part1' (parse' input))
+  (part2' (parse' input)))
+  ;; (apply bingo (parse' sample-input))
+  ;; (apply last-bingo (parse' sample-input))
+  ;; (time (apply bingo (parse' input)))
+  ;; (time (apply last-bingo (parse' input))))
