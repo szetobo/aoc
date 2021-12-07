@@ -9,35 +9,37 @@
 
 (defn parse
   [s]
-  (->> (re-seq #"\d+" s) (map read-string) frequencies))
+  (->> (re-seq #"\d+" s) (map read-string)))
 
 (def acc #(apply + (range (inc %))))
 (def acc' (memoize acc))
 
 (defn fuel
-  [fx nos pos]
-  (reduce-kv #(+ %1 (* (fx (util/diff %2 pos)) %3)) 0 nos))
+  [fx freq pos]
+  (reduce-kv #(+ %1 (* (fx (util/diff %2 pos)) %3)) 0 freq))
 
 (def fuel1 (partial fuel identity))
 (def fuel2 (partial fuel acc'))
 
 (comment
-  (-> sample-input parse (as-> $ (map #(fuel1 $ %) (range (->> (keys $) (apply max) inc)))))
-  (-> sample-input parse (as-> $ (map #(fuel2 $ %) (range (->> (keys $) (apply max) inc))))))
+  (-> sample-input parse frequencies (as-> $ (map #(fuel1 $ %) (range (->> (keys $) (apply max) inc)))))
+  (-> sample-input parse frequencies (as-> $ (map #(fuel2 $ %) (range (->> (keys $) (apply max) inc))))))
 
 (defn part1
   []
   (time
-    (let [nos (parse input)
-          m   (apply max (keys nos))]
-      (apply min (map #(fuel1 nos %) (range (inc m)))))))
+    (let [nos  (parse input)
+          freq (frequencies nos)
+          m    (apply max nos)]
+      (apply min (map #(fuel1 freq %) (range (inc m)))))))
 
 (defn part2
   []
   (time
-    (let [nos (parse input)
-          m   (apply max (keys nos))]
-      (apply min (map #(fuel2 nos %) (range (inc m)))))))
+    (let [nos  (parse input)
+          freq (frequencies nos)
+          m    (apply max nos)]
+      (apply min (map #(fuel2 freq %) (range (inc m)))))))
 
 (defn -main [& _]
   (println "part 1:" (part1))
