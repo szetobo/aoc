@@ -11,15 +11,16 @@
   [s]
   (->> (re-seq #"\d+" s) (map read-string)))
 
-(def acc #(apply + (range (inc %))))
-(def acc' (memoize acc))
+;; (def acc #(apply + (range (inc %))))
+;; (def acc' (memoize acc))
+(def pascal-triangle #(-> % (* (inc %)) (/ 2)))
 
 (defn fuel
   [fx freq pos]
   (reduce-kv #(+ %1 (* (fx (util/diff %2 pos)) %3)) 0 freq))
 
 (def fuel1 (partial fuel identity))
-(def fuel2 (partial fuel acc'))
+(def fuel2 (partial fuel pascal-triangle))
 
 (comment
   (-> sample-input parse frequencies (as-> $ (map #(fuel1 $ %) (range (->> (keys $) (apply max) inc)))))
