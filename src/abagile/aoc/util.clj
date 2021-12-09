@@ -9,9 +9,9 @@
 
 (def read-input-split-lines #(cs/split-lines (read-input %)))
 
-(def parse-int #(if (nil? %) 0 (Integer/parseInt %)))
+(def parse-int (fnil #(Integer/parseInt %) "0"))
 
-(def parse-long #(if (nil? %) 0 (Long/parseLong %)))
+(def parse-long (fnil #(Long/parseLong %) "0"))
 
 (def binary-val #(Integer/parseInt (apply str %) 2))
 
@@ -22,3 +22,15 @@
 (def range+ #(if (<= %1 %2) (range %1 (inc %2)) (range %1 (dec %2) -1)))
 
 (def diff #(if (<= %1 %2) (- %2 %1) (- %1 %2)))
+
+(defn fmap
+  [f m]
+  (reduce-kv #(assoc %1 %2 (f %3)) {} m))
+
+(defn fmap-keys
+  [f m]
+  (reduce-kv #(assoc %1 (f %2) %3) {} m))
+
+(comment
+  (fmap str {:a 1 :b 2 :c 3})         ; {:a "1", :b "2", :c "3"}
+  (fmap-keys name {:a 1 :b 2 :c 3}))  ; {"a" 1, "b" 2, "c" 3}
