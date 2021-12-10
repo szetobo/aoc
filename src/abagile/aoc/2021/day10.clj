@@ -17,14 +17,11 @@
 (defn check-syntax
   [s]
   (loop [stack '() [h & t] s]
-    (if (nil? h)
-      stack
-      (if (contains? pair-starts h)
-        (recur (conj stack h) t)
-        (let [[sh & st] stack]
-          (if (not= (pairs sh) h)
-            h
-            (recur st t)))))))
+    (cond
+      (nil? h)        stack
+      (pair-starts h) (recur (conj stack h) t)
+      :else           (let [[sh & st] stack]
+                        (if (not= (pairs sh) h) h (recur st t))))))
 
 (def scores1 {")" 3 "]" 57 "}" 1197 ">" 25137})
 
@@ -32,30 +29,35 @@
 
 (def mid-val #(nth % (-> (count %) inc (/ 2) dec)))
 
+(defn part1*
+  [puzzle]
+  (->> puzzle parse (map check-syntax) (remove list?)
+       (map scores1) (reduce +)))
+
+(defn part2*
+  [puzzle]
+  (->> puzzle parse (map check-syntax) (filter list?)
+       (map #(map (comp scores2 pairs) %))
+       (map #(reduce (fn [m n] (+ (* m 5) n)) %))
+       (sort)
+       mid-val))
+
 (comment
   (count sample-input)
   (parse sample-input)
-  (->> (parse sample-input) (map check-syntax) (remove list?) (map scores1) (reduce +))
-  (->> (parse sample-input) (map check-syntax) (filter list?)
-       (map #(->> (map pairs %) (map scores2)))
-       (map #(reduce (fn [m n] (+ (* m 5) n)) %))
-       (sort)
-       mid-val)
+  (part1* sample-input)
+  (part2* sample-input)
   (count input)
   (count (parse input))
   (take 10 (parse input)))
 
 (defn part1
   []
-  (time (->> (parse input) (map check-syntax) (remove list?) (map scores1) (reduce +))))
+  (time (part1* input)))
 
 (defn part2
   []
-  (time (->> (parse input) (map check-syntax) (filter list?)
-             (map #(->> (map pairs %) (map scores2)))
-             (map #(reduce (fn [m n] (+ (* m 5) n)) %))
-             (sort)
-             mid-val)))
+  (time (part2* input)))
 
 (defn -main [& _]
   (println "part 1:" (part1))
