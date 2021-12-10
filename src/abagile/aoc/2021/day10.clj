@@ -4,52 +4,44 @@
     [abagile.aoc.util :as util]
     [clojure.string :as cs]))
 
-(def sample-input (util/read-input "2021/day10.sample.txt"))
+(def sample-input (util/read-input-split-lines "2021/day10.sample.txt"))
 
-(def input (util/read-input "2021/day10.txt"))
-
-(defn parse [s] (map #(cs/split % #"") (cs/split s #"\n")))
-
-(def pairs  {"[" "]" "{" "}" "(" ")" "<" ">"})
-
-(def pair-starts (->> pairs keys set))
+(def input (util/read-input-split-lines "2021/day10.txt"))
 
 (defn check-syntax
-  [s]
-  (loop [stack '() [h & t] s]
-    (cond
-      (nil? h)        stack
-      (pair-starts h) (recur (conj stack h) t)
-      :else           (let [[sh & st] stack]
-                        (if (not= (pairs sh) h) h (recur st t))))))
+  [line]
+  (let [closing {\[ \] \{ \} \( \) \< \>} opening? (->> closing keys set)]
+    (reduce (fn [stack ch]
+              (cond
+                (opening? ch)       (conj stack (closing ch))
+                (= ch (peek stack)) (pop stack)
+                :else               (reduced {:corrupted ch})))
+      '()
+      line)))
 
-(def scores1 {")" 3 "]" 57 "}" 1197 ">" 25137})
+(def scores1 {\) 3 \] 57 \} 1197 \> 25137})
 
-(def scores2 {")" 1 "]" 2 "}" 3 ">" 4})
+(def scores2 {\) 1 \] 2 \} 3 \> 4})
 
-(def mid-val #(nth % (-> (count %) inc (/ 2) dec)))
+(def median #(nth (sort %) (quot (count %) 2)))
 
 (defn part1*
-  [puzzle]
-  (->> puzzle parse (map check-syntax) (remove list?)
+  [line]
+  (->> line (map check-syntax) (keep :corrupted)
        (map scores1) (reduce +)))
 
 (defn part2*
-  [puzzle]
-  (->> puzzle parse (map check-syntax) (filter list?)
-       (map #(map (comp scores2 pairs) %))
-       (map #(reduce (fn [m n] (+ (* m 5) n)) %))
-       (sort)
-       mid-val))
+  [line]
+  (->> line (map check-syntax) (remove :corrupted)
+       (map #(map scores2 %)) (map #(reduce (fn [m n] (+ (* m 5) n)) %)) median))
 
 (comment
   (count sample-input)
-  (parse sample-input)
+  (take 10 sample-input)
   (part1* sample-input)
   (part2* sample-input)
   (count input)
-  (count (parse input))
-  (take 10 (parse input)))
+  (take 10 input))
 
 (defn part1
   []
