@@ -8,55 +8,51 @@
 
 (def input (util/read-input "2021/day09.txt"))
 
-(defn cell-val [m [x y]] ((m x) y))
+(defn parse
+  [xs s]
+  (->> s (re-seq #"\d") (map read-string)
+       (map-indexed #(vector [(int (/ %1 xs)) (mod %1 xs)] %2))
+       (into (sorted-map))))
 
-(defn adjacent-cells
+(defn adjacent-points
   [[xs ys] [x y]]
-  (for [x' [(dec x) x (inc x)]
-        y' [(dec y) y (inc y)]
-        :when (and (> xs x' -1) (> ys y' -1)
-                   (or (= x' x) (= y' y))
-                   (not= [x y] [x' y']))]
+  (for [[dx dy] [[-1 0] [0 1] [1 0] [0 -1]]
+        :let [x' (+ x dx) y' (+ y dy)]
+        :when (and (> xs x' -1) (> ys y' -1))]
     [x' y']))
 
 (defn low-points
   [[xs ys] m]
-  (->> (for [x (range xs) y (range ys)
-             :let [v  (cell-val m [x y])
-                   ac (adjacent-cells [xs ys] [x y])]]
-         (when (= (count ac) (->> (filter #(> (cell-val m %) v) ac) count)) [[x y] v]))
-       (remove nil?)))
+  (remove nil? (for [x (range xs) y (range ys)
+                     :let [v   (m [x y])
+                           apt (adjacent-points [xs ys] [x y])]]
+                 (when (= (count apt) (count (filter #(> (m %) v) apt))) [[x y] v]))))
 
 (defn basins
-  [[xs ys] m [x y]]
-  (loop [rs #{} pts #{[x y]}]
+  [[xs ys] floor [x y]]
+  (loop [res #{} pts #{[x y]}]
     (let [pt  (first pts)
-          adj (->> (adjacent-cells [xs ys] pt)
-                   (remove #(contains? rs %))
-                   (filter #(< (cell-val m %) 9)))
-          pts (apply conj (disj pts pt) adj)
-          rs  (cond-> rs (< (cell-val m pt) 9) (conj pt))]
-      (if (seq pts)
-        (recur rs pts)
-        rs))))
+          apt (->> (adjacent-points [xs ys] pt) (remove #(or (contains? res %) (>= (floor %) 9))))
+          pts (apply conj (disj pts pt) apt)
+          res (conj res pt)]
+      (if (empty? pts) res (recur res pts)))))
+
+(comment
+  (parse 5 sample-input))
 
 (defn part1
   []
   (time
-    (let [gs [100 100]
-          m  (->> input (re-seq #"\d") (map read-string) (partition (first gs)) (mapv vec))]
-      (->> m (low-points gs) (map (comp inc last)) (reduce +)))))
+    (let [[xs _ :as gs] [100 100]]
+      (->> input (parse xs) (low-points gs) (map (comp inc last)) (reduce +)))))
 
 (defn part2
   []
   (time
-    (let [gs  [100 100]
-          m   (->> input (re-seq #"\d") (map read-string) (partition (first gs)) (mapv vec))
-          lps (->> m (low-points gs))]
-      (->> (map #(->> % first (basins gs m) count) lps)
-           (sort >)
-           (take 3)
-           (reduce *)))))
+    (let [[xs _ :as gs]  [100 100]
+          floor (parse xs input)]
+      (->> (map #(->> % first (basins gs floor) count) (low-points gs floor))
+           (sort >) (take 3) (reduce *)))))
 
 (defn -main [& _]
   (println "part 1:" (part1))
