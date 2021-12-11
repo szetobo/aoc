@@ -8,17 +8,9 @@
 
 (def input (util/read-input "2021/day11.txt"))
 
-;; (defn parse [s] (->> (cs/split s #"\n") (map seq) (map (fn [i] (mapv #(- (int %) (int \0)) i)))))
-
 (defn parse
   [xs s]
-  (->> s (re-seq #"\d") (map read-string)
-       (map-indexed #(vector [(int (/ %1 xs)) (mod %1 xs)] %2))
-       (into {})))
-
-(defn prn-grid
-  [xs grid]
-  (->> grid (into (sorted-map)) vals (partition xs)))
+  (->> s (re-seq #"\d") (map read-string) (util/parse-grid xs)))
 
 (defn adjacent-cells
   [[xs ys] [x y]]
@@ -29,12 +21,13 @@
 
 (defn play
   [gs grid]
-  (loop [before grid after (util/fmap inc grid)]
-    (let [flash-cells (map key (filter (fn [[cell energy]] (and (> energy 9) (<= (before cell) 9))) after))
-          adjacents   (reduce #(apply conj %1 (adjacent-cells gs %2)) [] flash-cells)]
+  (loop [grid (util/fmap inc grid)]
+    (let [flash-cells (map key (filter #(> (val %) 9) grid))
+          adjacents   (frequencies (mapcat #(adjacent-cells gs %) flash-cells))
+          grid        (util/fmap #(if (> % 9) ##-Inf %) grid)]
       (if (seq flash-cells)
-        (recur after (reduce (fn [grid' cell] (update grid' cell inc)) after adjacents))
-        (reduce (fn [grid' [cell energy]] (assoc grid' cell (if (> energy 9) 0 energy))) after after)))))
+        (recur (util/fmap-kv #(+ %2 (get adjacents %1 0)) grid))
+        (util/fmap #(if (= % ##-Inf) 0 %) grid)))))
 
 (def play* #(partial play %))
 
