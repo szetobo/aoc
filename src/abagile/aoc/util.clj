@@ -38,11 +38,3 @@
 (comment
   (fmap str {:a 1 :b 2 :c 3})         ; {:a "1", :b "2", :c "3"}
   (fmap-keys name {:a 1 :b 2 :c 3}))  ; {"a" 1, "b" 2, "c" 3}
-
-(defn parse-grid
-  [xs coll]
-  (into {} (map-indexed #(vector [(int (/ %1 xs)) (mod %1 xs)] %2) coll)))
-
-(defn print-grid
-  [xs grid]
-  (->> grid (into (sorted-map)) vals (partition xs)))
