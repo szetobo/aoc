@@ -17,7 +17,7 @@
 
 (def transpose #(apply map list %))
 
-(def spy #(doto %  prn))
+(def spy #(doto % prn))
 
 (def range+ #(if (<= %1 %2) (range %1 (inc %2)) (range %1 (dec %2) -1)))
 
@@ -38,3 +38,7 @@
 (comment
   (fmap str {:a 1 :b 2 :c 3})         ; {:a "1", :b "2", :c "3"}
   (fmap-keys name {:a 1 :b 2 :c 3}))  ; {"a" 1, "b" 2, "c" 3}
+
+(defn remove-keys
+  [f m]
+  (select-keys m (filter (complement f) (keys m))))

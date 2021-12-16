@@ -1,6 +1,7 @@
 (ns abagile.aoc.grid
   (:require
-    [abagile.aoc.util :as util]))
+    [abagile.aoc.util :as util]
+    [clojure.data.priority-map :refer [priority-map]]))
 
 (def offsets
   {:north [-1 0] :north-east [-1 1]
@@ -28,3 +29,13 @@
 
 (def adjacent-4 (partial adjacent (map offsets [:north :east :south :west])))
 (def adjacent-8 (partial adjacent (vals offsets)))
+
+(defn dijkstra
+  [start adj-dsts]
+  (loop [que (priority-map start 0) seen {}]
+    (if-let [[pos dst] (peek que)]
+      (let [dsts (->> (adj-dsts pos)
+                      (util/remove-keys seen)
+                      (util/fmap (partial + dst)))]
+        (recur (merge-with min (pop que) dsts) (assoc seen pos dst)))
+      seen)))
