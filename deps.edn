@@ -1,5 +1,6 @@
 {:paths ["src" "resources"]
- :deps {hashp/hashp {:mvn/version "0.2.0"}
+ :deps {clj-http/clj-http {:mvn/version "3.12.3"}
+        hashp/hashp {:mvn/version "0.2.0"}
         instaparse/instaparse {:mvn/version "1.4.10"}
         metosin/malli {:mvn/version "0.2.1"}
         org.clojure/core.logic {:mvn/version "1.0.0"}
