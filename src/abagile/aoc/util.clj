@@ -13,7 +13,7 @@
 
 (def parse-long (fnil #(Long/parseLong %) "0"))
 
-(def binary-val #(Integer/parseInt (apply str %) 2))
+(def binary-val #(Long/parseLong (apply str %) 2))
 
 (def transpose #(apply map list %))
 
