@@ -19,9 +19,12 @@
 
 (def spy #(doto % prn))
 
-(def range+ #(if (<= %1 %2) (range %1 (inc %2)) (range %1 (dec %2) -1)))
-
 (def diff #(if (<= %1 %2) (- %2 %1) (- %1 %2)))
+
+(defn range+
+  ([a] (range+ 0 a))
+  ([a b]
+   (if (<= a b) (range a (inc b)) (range a (dec b) -1))))
 
 (defn fmap
   [f m]

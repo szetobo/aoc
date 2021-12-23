@@ -29,6 +29,7 @@
 
 (def adjacent-4 (partial adjacent (map offsets [:north :east :south :west])))
 (def adjacent-8 (partial adjacent (vals offsets)))
+(def adjacent-9 (partial adjacent (sort (conj (vals offsets) [0 0]))))
 
 (defn dijkstra
   [start adj-dsts]
