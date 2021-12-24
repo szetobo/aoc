@@ -1,13 +1,11 @@
-(ns abagile.aoc.ocr
-  (:require
-    [clojure.string :as cs]))
+(ns abagile.aoc.ocr)
 
 (defn parse
   [s]
   (let [cols (->> s (re-find #"[.#]+\n") count dec)
         elms (->> s (re-seq #"[.#]") (map {"." 0 "#" 1}))
         grid (into {} (map-indexed #(vector [(quot %1 cols) (rem %1 cols)] %2) elms))]
-     (with-meta grid {:dim [cols (quot (count elms) cols)]})))
+     (with-meta grid {:dim [(quot (count elms) cols) cols]})))
 
 (defn draw
   [grid]
@@ -26,7 +24,3 @@
     "#....#..#.#.#..#..#.#.#..#..#.#....#..#"
     "#.....###.#..#..##..#..#.###..####..###"]
    "FGKCKBZG"})
-
-(defn -print
-  [grid]
-  (->> grid draw (cs/join "\n") println))

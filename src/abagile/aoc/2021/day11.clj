@@ -8,37 +8,38 @@
 (def input  (util/read-input "2021/day11.txt"))
 
 (defn play
-  [dim grid]
-  (loop [grid (util/fmap inc grid)]
-    (let [flash-cells (map key (filter #(> (val %) 9) grid))
-          adjacents   (frequencies (mapcat #(util/adjacent-8 dim %) flash-cells))
-          grid        (util/fmap #(if (> % 9) ##-Inf %) grid)]
+  [nbrs-fn octopuses]
+  (loop [octopuses (util/fmap inc octopuses)]
+    (let [flash-cells (map key (filter #(> (val %) 9) octopuses))
+          nbrs-freq   (frequencies (mapcat nbrs-fn flash-cells))
+          octopuses   (util/fmap #(if (> % 9) ##-Inf %) octopuses)]
       (if (seq flash-cells)
-        (recur (util/fmap-kv #(+ %2 (get adjacents %1 0)) grid))
-        (util/fmap #(if (= % ##-Inf) 0 %) grid)))))
-
-(def play* #(partial play %))
+        (recur (util/fmap-kv #(+ %2 (get nbrs-freq %1 0)) octopuses))
+        (util/fmap #(if (= % ##-Inf) 0 %) octopuses)))))
 
 (comment
   (count sample)
   (meta (grid/parse sample))
-  (grid/adjacent-8 [10 10] [8 8])
   (count input)
-  (meta (grid/parse sample)))
+  (meta (grid/parse input)))
 
 (defn part1
   []
-  (time (let [grid (grid/parse input) dim (:dim (meta grid))]
-          (->> (iterate (play* dim) grid) (drop 1)
-               (take 100) (map #(->> (vals %) (filter zero?) count)) (reduce +)))))
+  (time
+    (let [octopuses (grid/parse input)
+          nbrs-fn   #(grid/adjacent-8 (grid/bounded octopuses) %)]
+      (->> (iterate (partial play nbrs-fn) octopuses) (drop 1)
+           (take 100) (map #(->> (vals %) (filter zero?) count)) (reduce +)))))
 
 (defn part2
   []
-  (time (let [grid (grid/parse input) dim (:dim (meta grid))]
-          (->> (iterate (play* dim) grid) (drop 1)
-               (reduce (fn [step grid]
-                         (if (every? zero? (vals grid)) (reduced step) (inc step)))
-                 1)))))
+  (time
+    (let [octopuses (grid/parse input)
+          nbrs-fn   #(grid/adjacent-8 (grid/bounded octopuses) %)]
+      (->> (iterate (partial play nbrs-fn) octopuses) (drop 1)
+           (reduce (fn [step grid]
+                     (if (every? zero? (vals grid)) (reduced step) (inc step)))
+             1)))))
 
 (defn -main [& _]
   (println "part 1:" (part1))

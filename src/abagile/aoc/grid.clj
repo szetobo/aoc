@@ -11,32 +11,33 @@
 
 (defn parse
   [s]
-  (let [xs   (->> s (re-find #"\d+\n") count dec)
+  (let [cols (->> s (re-find #"\d+\n") count dec)
         elms (->> s (re-seq #"\d") (map util/parse-int)) 
-        grid (into {} (map-indexed #(vector [(int (/ %1 xs)) (mod %1 xs)] %2) elms))]
-     (with-meta grid {:dim [xs (/ (count elms) xs)]})))
+        grid (into {} (map-indexed #(vector [(quot %1 cols) (rem %1 cols)] %2) elms))]
+     (with-meta grid {:dim [(quot (count elms) cols) cols]})))
 
 (defn ->prn
   [xs grid]
   (->> grid (into (sorted-map)) vals (partition xs)))
 
+(defn bounded
+  ([grid]      (apply bounded (-> grid meta :dim)))
+  ([rows cols] (fn [[row col]] (and (> rows row -1) (> cols col -1)))))
+
 (defn- adjacent
-  [offsets [xs ys] [x y]]
-  (for [[dx dy] offsets
-        :let [x' (+ x dx) y' (+ y dy)]
-        :when (and (> xs x' -1) (> ys y' -1))]
-    [x' y']))
+  ([offsets [row col]]   (for [[dr dc] offsets] [(+ row dr) (+ col dc)]))
+  ([offsets f [row col]] (filter f (adjacent offsets [row col]))))
 
 (def adjacent-4 (partial adjacent (map offsets [:north :east :south :west])))
 (def adjacent-8 (partial adjacent (vals offsets)))
-(def adjacent-9 (partial adjacent (sort (conj (vals offsets) [0 0]))))
+(def adjacent-9 (partial adjacent (conj (vals offsets) [0 0])))
 
 (defn dijkstra
-  [start adj-dsts]
-  (loop [que (priority-map start 0) seen {}]
+  [start nbr-dsts]
+  (loop [que (priority-map start 0) visited {}]
     (if-let [[pos dst] (peek que)]
-      (let [dsts (->> (adj-dsts pos)
-                      (util/remove-keys seen)
+      (let [dsts (->> (nbr-dsts pos)
+                      (util/remove-keys visited)
                       (util/fmap (partial + dst)))]
-        (recur (merge-with min (pop que) dsts) (assoc seen pos dst)))
-      seen)))
+        (recur (merge-with min (pop que) dsts) (assoc visited pos dst)))
+      visited)))

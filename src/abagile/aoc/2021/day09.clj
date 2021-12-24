@@ -2,56 +2,45 @@
   (:gen-class)
   (:require
     [abagile.aoc.util :as util]
-    [clojure.string :as cs]))
+    [abagile.aoc.grid :as grid]))
 
-(def sample-input (util/read-input "2021/day09.sample.txt"))
-
-(def input (util/read-input "2021/day09.txt"))
-
-(defn parse
-  [xs s]
-  (->> s (re-seq #"\d") (map read-string)
-       (map-indexed #(vector [(int (/ %1 xs)) (mod %1 xs)] %2))
-       (into (sorted-map))))
-
-(defn adjacent-points
-  [[xs ys] [x y]]
-  (for [[dx dy] [[-1 0] [0 1] [1 0] [0 -1]]
-        :let [x' (+ x dx) y' (+ y dy)]
-        :when (and (> xs x' -1) (> ys y' -1))]
-    [x' y']))
+(def sample (util/read-input "2021/day09.sample.txt"))
+(def input  (util/read-input "2021/day09.txt"))
 
 (defn low-points
-  [[xs ys] m]
-  (remove nil? (for [x (range xs) y (range ys)
-                     :let [v   (m [x y])
-                           apt (adjacent-points [xs ys] [x y])]]
-                 (when (= (count apt) (count (filter #(> (m %) v) apt))) [[x y] v]))))
+  [caves]
+  (let [[rows cols] (-> caves meta :dim)
+        nbrs-fn     #(grid/adjacent-4 (grid/bounded rows cols) %)]
+    (for [row (range rows) col (range cols)
+          :let [v    (caves [row col])
+                nbrs (nbrs-fn [row col])]
+          :when (= (count nbrs) (count (filter #(> (caves %) v) nbrs)))]
+      [[row col] v])))
 
 (defn basins
-  [[xs ys] floor [x y]]
-  (loop [res #{} pts #{[x y]}]
-    (let [pt  (first pts)
-          apt (->> (adjacent-points [xs ys] pt) (remove #(or (contains? res %) (>= (floor %) 9))))
-          pts (apply conj (disj pts pt) apt)
-          res (conj res pt)]
-      (if (empty? pts) res (recur res pts)))))
+  [caves [x y]]
+  (let [nbrs-fn #(grid/adjacent-4 (grid/bounded caves) %)]
+    (loop [res #{} pts #{[x y]}]
+      (let [pt   (first pts)
+            nbrs (->> (nbrs-fn pt) (remove #(or (contains? res %) (>= (caves %) 9))))
+            pts  (apply conj (disj pts pt) nbrs)
+            res  (conj res pt)]
+        (if (empty? pts) res (recur res pts))))))
 
 (comment
-  (parse 5 sample-input))
+  (->> (grid/parse sample) (into (sorted-map))))
 
 (defn part1
   []
   (time
-    (let [[xs _ :as gs] [100 100]]
-      (->> input (parse xs) (low-points gs) (map (comp inc last)) (reduce +)))))
+    (->> input grid/parse low-points (map (comp inc last)) (reduce +))))
 
 (defn part2
   []
   (time
-    (let [[xs _ :as gs]  [100 100]
-          floor (parse xs input)]
-      (->> (map #(->> % first (basins gs floor) count) (low-points gs floor))
+    (let [caves   (grid/parse input)
+          low-pts (map first (low-points caves))]
+      (->> (map #(count (basins caves %)) low-pts)
            (sort >) (take 3) (reduce *)))))
 
 (defn -main [& _]

@@ -9,12 +9,6 @@
 (def sample (util/read-input "2021/day20.sample.txt"))
 (def input  (util/read-input "2021/day20.txt"))
 
-(defn- adjacent
-  [[x y]]
-  (for [[dx dy] (sort (conj (vals grid/offsets) [0 0]))
-        :let [x' (+ x dx) y' (+ y dy)]]
-    [x' y']))
-
 (defn parse
   [s]
   (let [[alg image] (cs/split s #"\n\n")]
@@ -26,7 +20,7 @@
         cols (->> grid keys (map second))]
     (->> (for [row (range (- (apply min rows) 2) (+ (apply max rows) 2))
                col (range (- (apply min cols) 2) (+ (apply max cols) 2))
-               :let [nbrs (adjacent [row col])]]
+               :let [nbrs (sort (grid/adjacent-9 [row col]))]]
            [[row col] (->> nbrs (map #(str (grid % bg))) (apply str) util/binary-val)])
          (into {})
          (util/fmap alg))))
