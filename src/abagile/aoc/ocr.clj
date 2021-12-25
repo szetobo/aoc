@@ -1,11 +1,14 @@
 (ns abagile.aoc.ocr)
 
 (defn parse
-  [s]
-  (let [cols (->> s (re-find #"[.#]+\n") count dec)
-        elms (->> s (re-seq #"[.#]") (map {"." 0 "#" 1}))
-        grid (into {} (map-indexed #(vector [(quot %1 cols) (rem %1 cols)] %2) elms))]
-     (with-meta grid {:dim [(quot (count elms) cols) cols]})))
+  ([s] (parse s {"." 0 "#" 1}))
+  ([s char-map]
+   (let [char-re (re-pattern (str "[" (keys char-map) "]"))
+         line-re (re-pattern (str char-re "+\\n"))
+         cols    (->> s (re-find line-re) count dec)
+         elms    (->> s (re-seq char-re) (map char-map))
+         grid    (into {} (map-indexed #(vector [(quot %1 cols) (rem %1 cols)] %2) elms))]
+     (with-meta grid {:dim [(quot (count elms) cols) cols]}))))
 
 (defn draw
   [grid]

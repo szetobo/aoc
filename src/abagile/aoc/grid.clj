@@ -17,8 +17,9 @@
      (with-meta grid {:dim [(quot (count elms) cols) cols]})))
 
 (defn ->prn
-  [xs grid]
-  (->> grid (into (sorted-map)) vals (partition xs)))
+  [grid]
+  (let [cols (->> grid keys (map second) (apply max) inc)]
+    (->> grid (into (sorted-map)) vals (partition cols) (map #(apply str %)))))
 
 (defn bounded
   ([grid]      (apply bounded (-> grid meta :dim)))
