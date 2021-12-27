@@ -11,33 +11,47 @@
 
 (defn parse
   [s]
-  (->> s (re-seq #"(inp|add|mul|div|mod|eql) ([w-z])(?:\s([w-z]|-?\d+))?") (map rest)))
+  (->> s (re-seq #"(inp|add|mul|div|mod|eql) ([w-z])(?:\s([w-z]|-?\d+))?")
+       (map rest)
+       (map (fn [[op var p]] [op var (when p (cond-> p (re-find #"-?\d+" p) read-string))]))))
   
 (defn eval-expr
   [{:keys [nos halt] :as state} [op var param]]
-  ;; (prn (select-keys state ["w" "x" "y" "z" :halt]) op var param)
   (if halt
     state
-    (let [param (when param (if (re-matches #"[w-z]" param) (get state param 0) (read-string param)))]
+    (let [param (when param (if (string? param) (get state param 0) param))]
       (case op
-        "inp" (assoc state var (first nos) :nos (conj (vec (rest nos)) (first nos)))
-        "add" (update state var (fnil + 0) param)
-        "mul" (update state var (fnil * 0) param)
+        "inp" (assoc state var (first nos) :nos (drop 1 nos))
+        "add" (update state var + param)
+        "mul" (update state var * param)
         "div" (if (zero? param)
                 (assoc state :halt true)
-                (update state var (fnil (comp int /) 0) param))
+                (update state var quot param))
         "mod" (if (or (<= param 0) (< (get state var 0) 0))
                 (assoc state :halt true)
-                (update state var (fnil mod 0) param))
-        "eql" (update state var (fnil (comp {true 1 false 0} =) 0) param)))))
+                (update state var mod param))
+        "eql" (update state var (comp {true 1 false 0} =) param)))))
 
 (defn monad
-  [nos exprs]
-  (reduce eval-expr {:nos nos} exprs))
+  ([nos exprs]
+   (monad nos 0 exprs))
+  ([nos z exprs]
+   (-> (reduce eval-expr {:nos nos "w" 0 "x" 0 "y" 0 "z" z} exprs)
+       (get "z"))))
+
+(def solve
+  (memoize
+    (fn [guesses z [cur & steps]]
+      (cond
+        (and (nil? cur) (= z 0)) '(())
+        (nil? cur)               '()
+        :else (for [w   guesses
+                    rst (solve guesses (monad [w] z cur) steps)]
+                (conj rst w))))))
 
 (defn extract-vars
   [exprs n]
-  (->> (partition 18 exprs) util/transpose (drop (dec n)) first (map #(-> % last read-string))))
+  (->> (partition 18 exprs) util/transpose (drop (dec n)) first (map last)))
 
 (defn step
   [w z a b c]
@@ -60,24 +74,37 @@
   (parse sample2)
   (parse sample3)
   (count input)
+  (->> (parse input) (monad (repeat 14 9) 1))
+  (time (->> (parse input)
+            (partition 18)
+            ;; (drop 10)
+            ;; (mapcat identity)
+            ;; (monad [3 2] 0))
+            (solve (util/range+ 1 9) 0)
+            first
+            (apply str) read-string))
   (->> (apply map vector (map (partial extract-vars (parse input)) [5 6 16]))
-       (drop 11)
-       (find-num (util/range+ 1 9) 0)))
+       ;; (drop 6)
+       (find-num (util/range+ 1 9) 0)
+       first
+       (apply str) read-string))
 
 (defn part1
   []
   (time
-    (let [exprs (parse input)
-          vars  (apply map vector (map (partial extract-vars exprs) [5 6 16]))]
-      (->> (find-num (util/range+ 9 1) 0 vars) first (apply str) read-string))))
+    ;; (let [exprs (parse input)
+    ;;       vars  (apply map vector (map (partial extract-vars exprs) [5 6 16]))]
+    ;;   (->> (find-num (util/range+ 9 1) 0 vars) first (apply str) read-string))
+    (->> (parse input) (partition 18) (solve (util/range+ 9 1) 0) first (apply str) read-string)))
 
 (defn part2
   []
   (time
-    (let [exprs (parse input)
-          vars  (apply map vector (map (partial extract-vars exprs) [5 6 16]))]
-      (->> (find-num (util/range+ 1 9) 0 vars)
-           first (apply str) read-string))))
+    ;; (let [exprs (parse input)
+    ;;       vars  (apply map vector (map (partial extract-vars exprs) [5 6 16]))]
+    ;;   (->> (find-num (util/range+ 1 9) 0 vars)
+    ;;        first (apply str) read-string))
+    (->> (parse input) (partition 18) (solve (util/range+ 1 9) 0) first (apply str) read-string)))
 
 (defn -main [& _]
   (println "part 1:" (part1))
