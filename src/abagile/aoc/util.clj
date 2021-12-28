@@ -45,3 +45,7 @@
 (defn remove-keys
   [f m]
   (select-keys m (filter (complement f) (keys m))))
+
+(defn manhattan-distance
+  ([a b] (manhattan-distance (map - a b)))
+  ([a] (apply + (map #(Math/abs %) a))))
