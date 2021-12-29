@@ -40,6 +40,13 @@
   (time
     (let [caves   (grid/parse input)
           low-pts (map first (low-points caves))]
+      ;; (->> (map (fn [pt]
+      ;;             (grid/dijkstra pt #(->> (grid/adjacent-4 (grid/bounded caves) %)
+      ;;                                     (filter (fn [pt] (< (caves pt) 9)))
+      ;;                                     (reduce (fn [res pt] (assoc res pt 1)) {}))))
+      ;;        low-pts)
+      ;;      (map count)
+      ;;      (sort >) (take 3) (reduce *))
       (->> (map #(count (basins caves %)) low-pts)
            (sort >) (take 3) (reduce *)))))
 
