@@ -1,8 +1,7 @@
 (ns abagile.aoc.2021.day10
   (:gen-class)
   (:require
-    [abagile.aoc.util :as util]
-    [clojure.string :as cs]))
+    [abagile.aoc.util :as util]))
 
 (def sample-input (util/read-input-split-lines "2021/day10.sample.txt"))
 
