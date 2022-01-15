@@ -1,48 +1,58 @@
 (ns abagile.aoc.2015.day11
-  (:gen-class))
-  ; (:require
-  ;   [clojure.java.io :as io]
-  ;   [clojure.string :as cs]))
-
-(def input "hxbxwxba")
+  (:gen-class)
+  (:require
+    [abagile.aoc.util :as util]
+    [clojure.test :refer [deftest is]]))
 
 (def sample1 "abcdefgh")
 (def sample2 "ghijklmn")
+(def input   "hxbxwxba")
 
-(def succ-digit {\a \b \b \c \c \d \d \e \e \f \f \g \g \h \h \j \i \j \j \k \k \m \l \m \m \n
-                 \n \p \o \p \p \q \q \r \r \s \s \t \t \u \u \v \v \w \w \x \x \y \y \z \z \a})
+(def succ-digits
+  (assoc
+    (->> (util/range+ (int \a) (int \z)) (map char) (partition 2 1) (map vec) (into {}))
+    \h \j \k \m \n \p \z \a))
 
-(defn succ [s]
-  (apply str
-    (loop [[h & t] (reverse (seq s))
-           res ()]
-      (if (nil? h)
-        (if (= (first res) \a)
-          (conj res \a)
-          res)
-        (let [ch (succ-digit h)]
-          (if (not= ch \a)
-            (apply conj res ch t)
-            (recur t (conj res ch))))))))
+(defn succ
+  [s]
+  (loop [s (vec s) res ""]
+    (if (empty? s)
+      (str \a res)
+      (let [last-digit (-> s peek succ-digits) s (pop s)]
+        (if (= last-digit \a)
+          (recur s (str \a res))
+          (str (apply str s) last-digit res))))))
 
-(defn valid [s]
-  (and (some (fn [[x y z]] (and (= (- (int y) (int x)) 1) (= (- (int z) (int y)) 1))) (partition 3 1 s))
-       (->> (re-seq #"(\w)(?=\1)" s)
-            (partition 2 1)
-            (#(and (> (count %) 0)
-                   (every? (fn [[x y]] (not= x y)) %))))
-       (not (re-seq #"[iol]" s))))
+(defn valid? [s]
+  (boolean
+    (and
+      (not (re-seq #"[iol]" s))
+      (some (fn [[x y z]] (and (= (-> x int inc) (int y)) (= (-> y int inc) (int z)))) (partition 3 1 s))
+      (let [pairs (->> (re-seq #"(\w)(?=\1)" s) (map first) (partition 2 1))]
+        (and (seq pairs) (every? #(apply not= %) pairs))))))
 
-(comment
-  (valid "ghjaabba")
-  (valid "hxbxxzaa")
+(def iterate-pwd #(->> (iterate succ %) (filter valid?)))
 
-  (take 1 (filter valid (iterate succ (succ sample1))))
-  (take 1 (filter valid (iterate succ (succ sample2)))))
+(defn part1
+  []
+  (time
+    (first (iterate-pwd input))))
+
+(defn part2
+  []
+  (time
+    (first (drop 1 (iterate-pwd input)))))
 
 (defn -main [& _]
-  (println "part 1:"
-           (take 1 (filter valid (iterate succ (succ input)))))
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))
 
-  (println "part 2:"
-           (take 2 (filter valid (iterate succ (succ input))))))
+(comment
+  (-main))
+
+(deftest example
+  (is (= false (valid? "hijklmmn")))
+  (is (= false (valid? "abbceffg")))
+  (is (= false (valid? "abbcegjk")))
+  (is (= "abcdffaa" (first (iterate-pwd sample1))))
+  (is (= "ghjaabcc" (first (iterate-pwd sample2)))))
