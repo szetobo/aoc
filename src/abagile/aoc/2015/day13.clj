@@ -1,53 +1,45 @@
 (ns abagile.aoc.2015.day13
   (:gen-class)
   (:require
-    [clojure.java.io :as io]
-    [clojure.math.combinatorics :refer [permutations]]
-    [clojure.string :as cs]))
+    [abagile.aoc.util :as util]
+    [clojure.math.combinatorics :as comb]
+    [clojure.test :refer [deftest is]]))
 
-(def sample1 ["Alice would gain 54 happiness units by sitting next to Bob."
-              "Alice would lose 79 happiness units by sitting next to Carol."
-              "Alice would lose 2 happiness units by sitting next to David."
-              "Bob would gain 83 happiness units by sitting next to Alice."
-              "Bob would lose 7 happiness units by sitting next to Carol."
-              "Bob would lose 63 happiness units by sitting next to David."
-              "Carol would lose 62 happiness units by sitting next to Alice."
-              "Carol would gain 60 happiness units by sitting next to Bob."
-              "Carol would gain 55 happiness units by sitting next to David."
-              "David would gain 46 happiness units by sitting next to Alice."
-              "David would lose 7 happiness units by sitting next to Bob."
-              "David would gain 41 happiness units by sitting next to Carol."])
+(def sample (util/read-input-split "2015/day13.sample.txt" #"\n"))
+(def input  (util/read-input-split "2015/day13.txt" #"\n"))
 
-(defn parse [s] (->> (re-find #"(\w+) would (gain|lose) (\d+) happiness units by sitting next to (\w+)" s)
-                     rest
-                     (#(let [[a b c d] %] (vector (keyword a) b (read-string c) (keyword d))))))
+(defn parse
+  [s]
+  (reduce #(let [[_ a sign units b] (re-find #"(\w+) would (gain|lose) (\d+) happiness units by sitting next to (\w+)" %2)]
+              (assoc %1 (list (keyword a) (keyword b)) (cond-> (read-string units) (= "lose" sign) (* -1))))
+    {}
+    s))
 
-(defn build-map [ctx [p1 lh pt p2]]
-  (-> ctx
-      (update-in [:family] #(conj % p1 p2))
-      (assoc-in [p1 p2] (if (= lh "gain") pt (- pt)))))
+(defn cal-happiness
+  [happiness]
+  (let [guests (-> happiness keys flatten set)]
+    (->> (for [seating (comb/permutations (rest guests))
+               :let [seating        (concat (take 1 guests) seating (take 1 guests))
+                     pair-happiness (juxt happiness (comp happiness reverse))]]
+           (->> (partition 2 1 seating) (reduce #(+ %1 (apply (fnil + 0 0) (pair-happiness %2))) 0)))
+         (apply max))))
 
-(defn cal-points [ctx ps]
-  (let [c (concat ps (take 1 ps))
-        fx (fn [x] (->> (partition 2 1 x)
-                        (map #(get-in ctx % 0))
-                        (reduce +)))]
-    (+ (fx c) (fx (reverse c)))))
+(defn part1
+  []
+  (time
+    (->> (parse input) cal-happiness)))
 
-(comment
-  (->> (map parse sample1)
-       (reduce build-map {:family #{}})
-       (#(apply max (for [s (permutations (:family %))] (cal-points % s))))))
+(defn part2
+  []
+  (time
+    (->> (assoc (parse input) '(:me :me) 0) cal-happiness)))
 
 (defn -main [& _]
-  (println "part 1:"
-           (->> (cs/split-lines (slurp (io/resource "2015/day13.txt")))
-                (map parse)
-                (reduce build-map {:family #{}})
-                (#(apply max (for [s (permutations (:family %))] (cal-points % s))))))
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))
 
-  (println "part 2:"
-           (->> (cs/split-lines (slurp (io/resource "2015/day13.txt")))
-                (map parse)
-                (reduce build-map {:family #{:Godwin}})
-                (#(apply max (for [s (permutations (:family %))] (cal-points % s)))))))
+(comment
+  (-main))
+
+(deftest example
+  (is (= 0 0)))
