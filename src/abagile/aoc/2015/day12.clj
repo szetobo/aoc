@@ -1,48 +1,37 @@
 (ns abagile.aoc.2015.day12
   (:gen-class)
   (:require
+    [abagile.aoc.util :as util]
     [clojure.data.json :as json]
-    [clojure.java.io :as io]))
+    [clojure.test :refer [deftest is]]))
 
-(def sample1 "[1,2,3]")
-(def sample2 "{\"a\": 2 \"b\":4}")
-(def sample3 "[1,{\"c\":\"red\",\"b\":2},3]")
-(def sample4 "{\"d\":\"red\",\"e\":[1,2,3,4],\"f\":5}")
-(def sample5 "[1,\"red\",5]")
+(def input (util/read-input "2015/day12.txt"))
 
-(re-seq #"[+-]?\d+" sample1)
-(re-seq #"[+-]?\d+" sample2)
-
-(defn deep-find-no [x]
+(defn sum
+  [v]
   (cond
-    (map? x)
-    (when-not ((set (vals x)) "red")
-      (let [nos (filter number? (vals x))
-            colls (filter coll? (vals x))]
-        (concat nos (when (seq colls) (mapcat deep-find-no colls)))))
+    (integer? v) v
+    (string? v)  0
+    (vector? v)  (reduce + (map sum v))
+    (map? v)     (let [vs (vals v)] (if (some #{"red"} vs) 0 (reduce + (map sum vs))))))
 
-    (coll? x)
-    (let [nos (filter number? x)
-          colls (filter coll? x)]
-      (concat nos (when (seq colls) (mapcat deep-find-no colls))))))
+(defn part1
+  []
+  (time
+    (->> input (re-seq #"-?\d+") (map read-string) (reduce +))))
 
-(comment
-  (deep-find-no [12 34 45 [23 [34 [14] 38] 349 "abc"]])
-  (deep-find-no {:a 1 :b {:c 2 :x "red"}})
-  (deep-find-no [{:a {:b 120} :c [34 45]}])
-  (deep-find-no (json/read-str sample3))
-  (deep-find-no (json/read-str sample4))
-  (deep-find-no (json/read-str sample5)))
+(defn part2
+  []
+  (time
+    (->> input json/read-str sum)))
+
 
 (defn -main [& _]
-  (println "part 1:"
-           (->> (slurp (io/resource "2015/day12.txt"))
-                (re-seq #"[+-]?\d+")
-                (map read-string)
-                (reduce +)))
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))
 
-  (println "part 2:"
-           (->> (slurp (io/resource "2015/day12.txt"))
-                (json/read-str)
-                deep-find-no
-                (reduce +))))
+(comment
+  (-main))
+
+(deftest example
+  (is (= 0 0)))
