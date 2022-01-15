@@ -1,72 +1,48 @@
 (ns abagile.aoc.2015.day14
-  (:gen-class))
-  ; (:require
-  ;   [clojure.java.io :as io]
-  ;   [clojure.string :as cs]))
+  (:gen-class)
+  (:require
+    [abagile.aoc.util :as util]
+    [clojure.test :refer [deftest is]]))
 
-(def sample ["Comet can fly 14 km/s for 10 seconds, but then must rest for 127 seconds."
-             "Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds."])
+(def sample (util/read-input-split "2015/day14.sample.txt" #"\n"))
+(def input  (util/read-input-split "2015/day14.txt" #"\n"))
 
-(def input ["Rudolph can fly 22 km/s for 8 seconds, but then must rest for 165 seconds."
-            "Cupid can fly 8 km/s for 17 seconds, but then must rest for 114 seconds."
-            "Prancer can fly 18 km/s for 6 seconds, but then must rest for 103 seconds."
-            "Donner can fly 25 km/s for 6 seconds, but then must rest for 145 seconds."
-            "Dasher can fly 11 km/s for 12 seconds, but then must rest for 125 seconds."
-            "Comet can fly 21 km/s for 6 seconds, but then must rest for 121 seconds."
-            "Blitzen can fly 18 km/s for 3 seconds, but then must rest for 50 seconds."
-            "Vixen can fly 20 km/s for 4 seconds, but then must rest for 75 seconds."
-            "Dancer can fly 7 km/s for 20 seconds, but then must rest for 119 seconds."])
+(defn parse
+  [s]
+  (reduce #(let [[_ deer & params] (re-find #"(\w+) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds." %2)]
+             (assoc %1 (keyword deer) (map read-string params)))
+    {}
+    s))
 
-(defn parse [s] (->> (re-find #"(\w+) can fly (\d+) km/s for (\d+) seconds, but then must rest for (\d+) seconds." s)
-                     rest
-                     (#(let [[a b c d] %] (vector (keyword a) (read-string b) (read-string c) (read-string d))))))
+(defn distance
+  [t [speed running resting]]
+  (let [[q m] ((juxt quot rem) t (+ running resting))]
+    (* (+ (* q running) (min m running)) speed)))
 
-(def second-seq #(fn [n] (take n (cycle (concat (repeat %2 %1) (repeat %3 0))))))
+(defn part1
+  []
+  (time
+    (->> (parse input) (util/fmap #(distance 2503 %)) (apply max-key val))))
 
-(defn build-map [ctx [p f s r]]
-  (-> ctx
-      (assoc-in [p] [f s r])
-      (assoc-in [:seqs p] (second-seq f s r))))
-
-(comment
-  ((apply second-seq [8 4 50]) 10)
-  (->> (map parse input)
-       (reduce build-map {})
-       (map (fn [[k v]] [k (reduce + ((apply second-seq v) 2503))]))
-       (sort-by second)
-       last))
-
-(defn score [input n]
-  (let [ctx (->> (map parse input)
-                 (reduce build-map {}))
-        seqs (:seqs ctx)]
-    (loop [t 1
-           ds {}
-           ps {}]
-      (if (> t n)
-        {:ds ds :ps ps}
-        (let [ds' (reduce-kv (fn [res k v]
-                               (update res k #(+ (or % 0) (last (v t)))))
-                             ds
-                             seqs)
-              mx  (apply max (vals ds'))
-              ps' (reduce-kv (fn [res k v]
-                               (update res k #(+ (or % 0) (if (= v mx) 1 0))))
-                             ps
-                             ds')]
-          (recur (inc t) ds' ps'))))))
+(defn part2
+  []
+  (time
+    (let [deers (parse input)]
+      (->> (reduce (fn [res t]
+                     (let [dists    (util/fmap #(distance t %) deers)
+                           max-dist (apply max (vals dists))
+                           winners  (reduce #(cond-> %1 (= (val %2) max-dist) (conj (key %2))) #{} dists)]
+                       (reduce-kv #(assoc %1 %2 (cond-> %3 (contains? winners %2) inc)) res res)))
+             (util/fmap (constantly 0) deers)
+             (util/range+ 1 2503))
+           (apply max-key val)))))
 
 (defn -main [& _]
-  (println "part 1:"
-           (->> (map parse input)
-                (reduce build-map {})
-                (map (fn [[k v]] [k (reduce + ((apply second-seq v) 2503))]))
-                (sort-by second)
-                last))
+  (println "part 1:" (part1))
+  (println "part 2:" (part2)))
 
-  (println "part 2:"
-           (->> (score input 2503)
-                :ps
-                (sort-by (fn [[_ v]] v))
-                last)))
+(comment
+  (-main))
 
+(deftest example
+  (is (= {:Comet 1120 :Dancer 1056} (->> (parse sample) (util/fmap #(distance 1000 %))))))
