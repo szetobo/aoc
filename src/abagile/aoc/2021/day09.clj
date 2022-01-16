@@ -1,6 +1,7 @@
 (ns abagile.aoc.2021.day09
   (:gen-class)
   (:require
+    [abagile.aoc.algo :as algo]
     [abagile.aoc.util :as util]
     [abagile.aoc.grid :as grid]))
 
@@ -41,7 +42,7 @@
     (let [caves   (grid/parse input)
           low-pts (map first (low-points caves))]
       ;; (->> (map (fn [pt]
-      ;;             (grid/dijkstra pt #(->> (grid/adjacent-4 (grid/bounded caves) %)
+      ;;             (algo/dijkstra pt #(->> (grid/adjacent-4 (grid/bounded caves) %)
       ;;                                     (filter (fn [pt] (< (caves pt) 9)))
       ;;                                     (reduce (fn [res pt] (assoc res pt 1)) {}))))
       ;;        low-pts)

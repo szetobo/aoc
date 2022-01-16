@@ -1,7 +1,7 @@
 (ns abagile.aoc.2021.day23
   (:gen-class)
   (:require
-    [abagile.aoc.grid :as grid]
+    [abagile.aoc.algo :as algo]
     [abagile.aoc.ocr :as ocr]
     [abagile.aoc.util :as util]
     [clojure.string :as cs]
@@ -78,14 +78,14 @@
 (defn part1
   []
   (time
-    (->> (grid/dijkstra (parse input) moves)
+    (->> (algo/dijkstra (parse input) moves)
          (filter (fn [[grid _]] (every? #(all-home? grid %) "ABCD")))
          first second)))
 
 (defn part2
   []
   (time
-    (->> (grid/dijkstra (parse (unfold input)) moves)
+    (->> (algo/dijkstra (parse (unfold input)) moves)
          (filter (fn [[grid _]] (every? #(all-home? grid %) "ABCD")))
          first second)))
 

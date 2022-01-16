@@ -1,6 +1,7 @@
 (ns abagile.aoc.2021.day15
   (:gen-class)
   (:require
+    [abagile.aoc.algo :as algo]
     [abagile.aoc.grid :as grid]
     [abagile.aoc.util :as util]))
 
@@ -23,19 +24,19 @@
 (comment
   (count sample)
   (-> (grid/parse sample) (nbr-risks [1 1]))
-  (time (-> (grid/dijkstra [0 0] (partial nbr-risks (grid/parse sample))) (get [9 9])))
+  (time (-> (algo/dijkstra [0 0] (partial nbr-risks (grid/parse sample))) (get [9 9])))
   (count input)
   (meta (grid/parse input)))
 
 (defn part1
   []
   (time (let [cave (grid/parse input) dim (-> cave meta :dim)]
-          (-> (grid/dijkstra [0 0] (partial nbr-risks cave)) (get (map dec dim))))))
+          (-> (algo/dijkstra [0 0] (partial nbr-risks cave)) (get (map dec dim))))))
 
 (defn part2
   []
   (time (let [cave (-> (grid/parse input) (expand-cave 5)) dim (-> cave meta :dim)]
-          (-> (grid/dijkstra [0 0] (partial nbr-risks cave)) (get (map dec dim))))))
+          (-> (algo/dijkstra [0 0] (partial nbr-risks cave)) (get (map dec dim))))))
 
 (defn -main [& _]
   (println "part 1:" (part1))
