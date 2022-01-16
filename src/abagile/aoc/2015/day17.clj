@@ -1,37 +1,38 @@
 (ns abagile.aoc.2015.day17
   (:gen-class)
   (:require
-    [clojure.test :refer [deftest is]]
-    [clojure.math.combinatorics :as comb]))
+    [abagile.aoc.algo :as algo]
+    [abagile.aoc.util :as util]
+    [clojure.test :refer [deftest is]]))
 
-(def input [11 30 47 31 32 36 3 1 5 3 32 36 15 11 46 26 28 1 19 3])
+(def sample (util/read-input "2015/day17.sample.txt"))
+(def input  (util/read-input "2015/day17.txt"))
 
-(def sample [20 15 10 5 5])
-
-(defn selections [data ttl]
-  (->> (map (fn [l1 l2] (when (= ttl (reduce + (map #(* %1 %2) l1 l2))) l2))
-            (repeatedly (constantly data))
-            (comb/selections [0 1] (count data)))
-       (filter some?)))
-
-(defn min-selections [data ttl]
-  (->> (selections data ttl)
-       (map #(reduce + %))
-       sort
-       (partition-by identity)
-       first
-       count))
+(defn parse
+  [data]
+  (->> (re-seq #"(\d+)" data) (map #(read-string (second %)))))
 
 (defn part1 []
-  (time (count (selections input 150))))
+  (time
+    (->> (parse input) (algo/subset-sum-01 150) count)))
 
 (defn part2 []
-  (time (min-selections input 150)))
+  (time
+    (->> (parse input) (algo/subset-sum-01 150)
+         (#(let [counts  (group-by count %)
+                 min-cnt (apply min (keys counts))]
+             (count (counts min-cnt)))))))
 
 (defn -main [& _]
   (println "part 1:" (part1))
   (println "part 2:" (part2)))
 
+(comment
+  (-main))
+
 (deftest test-sample
-  (is (= (count (selections sample 25)) 4))
-  (is (= (min-selections sample 25) 3)))
+  (is (= 4 (->> (parse sample) (algo/subset-sum-01 25) count)))
+  (is (= 3 (->> (parse sample) (algo/subset-sum-01 25)
+                (#(let [counts  (group-by count %)
+                        min-cnt (apply min (keys counts))]
+                    (count (counts min-cnt))))))))

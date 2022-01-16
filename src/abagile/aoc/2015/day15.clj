@@ -19,7 +19,7 @@
 
 (defn recipe-scores
   [ingredients]
-  (for [spoons (algo/range-sum-subsets 100 (count ingredients))]
+  (for [spoons (algo/subset-sum-ranged 100 (count ingredients))]
     (->> (map (fn [[_ v] spoon] (util/fmap #(* % spoon) v)) ingredients spoons)
          (apply merge-with +)
          (util/fmap #(max 0 %)))))
