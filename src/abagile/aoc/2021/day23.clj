@@ -18,7 +18,7 @@
 (defn unfold
   [s]
   (let [[top bottom] (->> s cs/split-lines (split-at 3))]
-    (cs/join "\n" (concat top ["  #D#C#B#A#  " "  #D#B#A#C#  "] bottom))))
+    (str (cs/join "\n" (concat top ["  #D#C#B#A#  " "  #D#B#A#C#  "] bottom)) "\n")))
 
 (def halls #{[1 1] [1 2] [1 4] [1 6] [1 8] [1 10] [1 11]})
 

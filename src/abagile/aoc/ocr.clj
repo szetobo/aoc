@@ -3,12 +3,12 @@
 (defn parse
   ([s] (parse s {"." 0 "#" 1}))
   ([s char-map]
-   (let [char-re (re-pattern (str "[" (keys char-map) "]"))
-         line-re (re-pattern (str char-re "+\\n"))
-         cols    (->> s (re-find line-re) count dec)
+   (let [char-re (re-pattern (str "[" (apply str (keys char-map)) "]"))
+         rows    (->> s (re-seq #"\n") count)
          elms    (->> s (re-seq char-re) (map char-map))
+         cols    (quot (count elms) rows)
          grid    (into {} (map-indexed #(vector [(quot %1 cols) (rem %1 cols)] %2) elms))]
-     (with-meta grid {:dim [(quot (count elms) cols) cols]}))))
+     (with-meta grid {:dim [rows cols]}))))
 
 (defn draw
   [grid]
