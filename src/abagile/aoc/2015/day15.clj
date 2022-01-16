@@ -1,91 +1,52 @@
 (ns abagile.aoc.2015.day15
   (:gen-class)
   (:require
+    [abagile.aoc.algo :as algo]
     [abagile.aoc.util :as util]
-    [clojure.test :refer [deftest is]]
-    [instaparse.core :as insta]))
+    [clojure.test :refer [deftest is]]))
 
-(def sample ["Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8"
-             "Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3"])
+(def sample (util/read-input-split "2015/day15.sample.txt" #"\n"))
+(def input  (util/read-input-split "2015/day15.txt" #"\n"))
 
-(def input ["Sprinkles: capacity 2, durability 0, flavor -2, texture 0, calories 3"
-            "Butterscotch: capacity 0, durability 5, flavor -3, texture 0, calories 3"
-            "Chocolate: capacity 0, durability 0, flavor 5, texture -1, calories 8"
-            "Candy: capacity 0, durability -1, flavor 0, texture 5, calories 8"])
+(defn parse
+  [data]
+  (into {} (map vector
+             (map #(->> (re-find #"(\w+):" %) second keyword) data)
+             (map #(->> (re-seq #"(\w+) (-?\d+)" %)
+                        (map (fn [[_ prop units]] [(keyword prop) (read-string units)]))
+                        (into {}))
+               data))))
 
-(def rule-parser (insta/parser "S = IN <':'> PROPS
-                                IN = #'\\w+'
-                                PROPS = PROP | PROP (<','> PROP)+
-                                <space> = <#'\\s*'>
-                                PROP = PT QTY
-                                PT = space #'\\w+' space
-                                QTY = #'[-0-9]+'"))
+(defn recipe-scores
+  [ingredients]
+  (for [spoons (algo/range-sum-subsets 100 (count ingredients))]
+    (->> (map (fn [[_ v] spoon] (util/fmap #(* % spoon) v)) ingredients spoons)
+         (apply merge-with +)
+         (util/fmap #(max 0 %)))))
 
-(def transform-opts {:S hash-map
-                     :IN keyword
-                     :PROPS merge
-                     :PROP hash-map
-                     :PT keyword
-                     :QTY util/parse-int})
+(defn part1
+  []
+  (time
+    (->> (parse input) recipe-scores
+         (map #(->> (dissoc % :calories) vals (reduce *))) (apply max))))
 
-(defn parse [data]
-  (->> (map rule-parser data)
-       (map (partial insta/transform transform-opts))
-       (reduce merge)))
-
-(defn pick-scores [data ks]
-  (->> (reduce-kv (fn [r k v] (assoc r k (map v ks))) {} data)
-       vals))
-
-(defn part1 []
-  (let [data (parse input)
-        scores (pick-scores data [:flavor :capacity :durability :texture])]
-    (->> (for [a (range 101)
-               b (range 101)
-               c (range 101)
-               d (range 101)
-               :when (= (+ a b c d) 100)]
-          [(->> (apply map #(max 0 (+ (* a %1) (* b %2) (* c %3) (* d %4))) scores)
-                (reduce *))
-           a b c d])
-         (sort-by first >)
-         first)))
-
-(defn part2 []
-  (let [data (parse input)
-        scores (pick-scores data [:flavor :capacity :durability :texture])
-        calories (flatten (pick-scores data [:calories]))]
-    (->> (for [a (range 101)
-               b (range 101)
-               c (range 101)
-               d (range 101)
-               :when (= (+ a b c d) 100)
-               :when (= 500 (reduce + (map #(* %1 %2) [a b c d] calories)))]
-          [(->> (apply map #(max 0 (+ (* a %1) (* b %2) (* c %3) (* d %4))) scores)
-                (reduce *))
-           a b c d])
-         (sort-by first >)
-         first)))
+(defn part2
+  []
+  (time
+    (->> (parse input) recipe-scores
+         (filter #(= 500 (:calories %)))
+         (map #(->> (dissoc % :calories) vals (reduce *))) (apply max))))
 
 (defn -main [& _]
   (println "part 1:" (part1))
   (println "part 2:" (part2)))
 
-(deftest test-sample
-  (is (= (parse sample) {:Butterscotch
-                         {:calories 8, :flavor 6, :capacity -1, :durability -2, :texture 3},
-                         :Cinnamon
-                         {:calories 3, :flavor -2, :capacity 2, :durability 3, :texture -1}}))
-  (is (= (pick-scores (parse sample) [:flavor :capacity :durability :texture])
-         [[6 -1 -2 3] [-2 2 3 -1]]))
-  (is (= (flatten (pick-scores (parse sample) [:calories])) [8 3])))
+(comment
+  (-main))
 
-(deftest test-input
-  (is (= (parse input) {:Butterscotch
-                        {:calories 3, :flavor -3, :capacity 0, :durability 5, :texture 0},
-                        :Candy
-                        {:calories 8, :flavor 0, :capacity 0, :durability -1, :texture 5},
-                        :Sprinkles
-                        {:calories 3, :flavor -2, :capacity 2, :durability 0, :texture 0},
-                        :Chocolate
-                        {:calories 8, :flavor 5, :capacity 0, :durability 0, :texture -1}})))
+(deftest example
+  (is (= 62842880 (->> (parse sample) recipe-scores
+                       (map #(->> (dissoc % :calories) vals (reduce *))) (apply max))))
+  (is (= 57600000 (->> (parse sample) recipe-scores
+                       (filter #(= 500 (:calories %)))
+                       (map #(->> (dissoc % :calories) vals (reduce *))) (apply max)))))
