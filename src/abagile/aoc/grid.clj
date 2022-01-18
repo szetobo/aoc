@@ -31,3 +31,9 @@
 (def adjacent-4 (partial adjacent (map offsets [:north :east :south :west])))
 (def adjacent-8 (partial adjacent (vals offsets)))
 (def adjacent-9 (partial adjacent (conj (vals offsets) [0 0])))
+
+(defn manhattan-distance [[row1 col1] [row2 col2]]
+  (+ (util/diff row2 row1) (util/diff col2 col1)))
+
+(defn euclidian-distance [[row1 col1] [row2 col2]]
+  (Math/sqrt (+ (Math/pow (util/diff row2 row1) 2) (Math/pow (util/diff col2 col1) 2))))

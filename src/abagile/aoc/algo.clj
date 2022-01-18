@@ -13,6 +13,21 @@
         (recur (merge-with min (pop que) dsts) (assoc visited pos dst)))
       visited)))
 
+(defn a*
+  [start dest nbr-dsts heuristic]
+  (loop [que (priority-map start [0 0]) visited {}]
+    (if-let [[pos [_ dst]] (peek que)]
+      (if (= pos dest)
+        (assoc visited pos dst)
+        (let [dsts (->> (nbr-dsts pos)
+                        (util/remove-keys visited)
+                        (reduce-kv (fn [res nbr nbr-dst]
+                                     (let [dst' (+ nbr-dst dst)]
+                                       (assoc res nbr [(+ (heuristic nbr dest) dst') dst'])))
+                          {}))]
+          (recur (merge-with (partial min-key first) (pop que) dsts) (assoc visited pos dst))))
+      visited)))
+
 (defn subset-sum-01
   [ttl [item & items]]
   (cond
