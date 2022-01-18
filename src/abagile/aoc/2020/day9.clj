@@ -3,8 +3,7 @@
   (:require
     [abagile.aoc.util :as util]))
 
-(def input (->> (util/read-input-split-lines "2020/day9.txt")
-                (mapv util/parse-long)))
+(def input (->> (util/read-input-split-lines "2020/day9.txt") (map read-string)))
 
 (def sample [35 20 15 25 47 40 62 55 65 95 102 117 150 182 127 219 299 277 309 576])
 
