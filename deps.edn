@@ -7,10 +7,13 @@
         org.clojure/data.json {:mvn/version "1.0.0"}
         org.clojure/data.priority-map {:mvn/version "1.0.0"}
         org.clojure/tools.namespace {:mvn/version "1.1.0"}
-        org.clojure/math.combinatorics {:mvn/version "0.1.6"}}
+        org.clojure/math.combinatorics {:mvn/version "0.1.6"}
+        philoskim/debux-stubs {:mvn/version "0.8.2"}}
  :aliases {:nrepl {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.5"}
                                 refactor-nrepl/refactor-nrepl {:mvn/version "2.5.1"}
-                                hashp/hashp {:mvn/version "0.2.1"}}
+                                hashp/hashp {:mvn/version "0.2.1"}
+                                io.github.nextjournal/clerk {:mvn/version "0.8.451"}
+                                philoskim/debux {:mvn/version "0.8.2"}}
                    :main-opts ["-m" "nrepl.cmdline"
                                "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor]"
                                "--interactive"]}}}

@@ -2,7 +2,8 @@
   (:require
     [clojure.java.io :as io]
     [clojure.string :as cs]
-    [hashp.core]
+    [debux.core]
+    [nextjournal.clerk :as clerk]
     [org.httpkit.client :as http]))
 
 (def http-header {:headers {"cookie" (str "session=" (cs/trim-newline (slurp ".session")))}})
@@ -19,3 +20,8 @@
             error             (println (str "Failed, exception is " error))
             (not= status 200) (println (str "Failed with status " status "\n" body))
             :else             (spit path body)))))))
+
+(comment
+  (clerk/serve! {:browser? true
+                 :watch-paths ["src"]})
+  (clerk/halt!))

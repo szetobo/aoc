@@ -1,12 +1,15 @@
+;; # AOC 2021 day-01
 (ns abagile.aoc.2021.day01
   (:gen-class)
   (:require
-    [abagile.aoc.util :as util]))
+    [abagile.aoc.util :as util]
+    [nextjournal.clerk :as clerk]))
 
 (def input (->> (util/read-input-split-lines "2021/day01.txt")
                 (map util/parse-int)))
 
-(comment
+;; ### sample of input
+(clerk/example
   (count input)
   (take 10 input)
   (partition 2 1 input)
