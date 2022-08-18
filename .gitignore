@@ -13,3 +13,5 @@
 .clj-kondo
 .lsp
 .clerk
+.Rhistory
+.Rproj.user
