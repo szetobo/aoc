@@ -1,38 +1,29 @@
 (ns abagile.aoc.2022.day02
   (:require
-   [abagile.aoc.util :as util]
    [clojure.string :as cs]))
 
-(def input (->> (util/read-input-split-lines "2022/day02.txt")
-                (map #(cs/split % #" "))))
+(def input (->> (slurp "resources/2022/day02.txt")
+                cs/split-lines
+                (map #(cs/split % #" "))
+                (map #(map {"A" 1 "B" 2 "C" 3 "X" 1 "Y" 2 "Z" 3} %))))
 
-(def shape-scores {"X" 1 "Y" 2 "Z" 3})
-
-(def outcome-scores {"A" {"X" 3 "Y" 6 "Z" 0}
-                     "B" {"X" 0 "Y" 3 "Z" 6}
-                     "C" {"X" 6 "Y" 0 "Z" 3}})
-
-(defn score-1
-  [[x y]]
-  (+ (get-in outcome-scores [x y]) (get shape-scores y)))
+(defn score1
+  [[a b]]
+  (+ b
+     (-> (- b a) inc (mod 3) (* 3))))
 
 (defn part1
   []
-  (time (->> input (map score-1) (reduce +))))
+  (time (->> input (map score1) (reduce +))))
 
-(def outcome-scores'
-  (util/fmap (fn [m] (reduce-kv #(assoc %1 %3 %2) {} m)) outcome-scores))
-
-(defn score-2
-  [[x y]]
-  (let [outcome-score (case y "X" 0 "Y" 3 "Z" 6)]
-    (+ outcome-score
-       (->> (get-in outcome-scores' [x outcome-score])
-            (get shape-scores)))))
+(defn score2
+  [[a b]]
+  (+ (-> (+ a (- b 2)) dec (mod 3) inc)
+     (-> (dec b) (* 3))))
 
 (defn part2
   []
-  (time (->> input (map score-2) (reduce +))))
+  (time (->> input (map score2) (reduce +))))
 
 (defn -main [& _]
   (println "part 1:" (part1))
