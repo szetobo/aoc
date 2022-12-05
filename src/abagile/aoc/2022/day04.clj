@@ -5,23 +5,21 @@
 (def input (->> (slurp "resources/2022/day04.txt") cs/split-lines
                 (map #(->> % (re-seq #"\d+") (map read-string)))))
 
-(defn fully-overlapped
+(defn fully?
   [[a b x y]]
-  (or (and (<= a x b) (<= a y b))
-      (and (<= x a y) (<= x b y))))
+  (or (<= a x y b) (<= x a b y)))
 
 (defn part1
   []
-  (time (->> input (filter fully-overlapped) count)))
+  (time (->> input (filter fully?) count)))
 
-(defn partial-overlapped
+(defn partial?
   [[a b x y]]
-  (or (<= a x b) (<= a y b)
-      (<= x a y) (<= x b y)))
+  (or (<= a x b) (<= x a y)))
 
 (defn part2
   []
-  (time (->> input (filter partial-overlapped) count)))
+  (time (->> input (filter partial?) count)))
 
 (defn -main [& _]
   (println "part 1:" (part1))
