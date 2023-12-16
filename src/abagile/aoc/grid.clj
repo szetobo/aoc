@@ -24,7 +24,7 @@
   ([grid]      (apply bounded (-> grid meta :dim)))
   ([rows cols] (fn [[row col]] (and (> rows row -1) (> cols col -1)))))
 
-(defn- adjacent
+(defn adjacent
   ([offsets [row col]]   (for [[dr dc] offsets] [(+ row dr) (+ col dc)]))
   ([offsets f [row col]] (filter f (adjacent offsets [row col]))))
 
