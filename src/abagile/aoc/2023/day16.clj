@@ -13,12 +13,10 @@
         grid (into (sorted-map) (map-indexed #(vector [(quot %1 cols) (rem %1 cols)] %2) elms))]
      (with-meta grid {:dim [(quot (count elms) cols) cols]})))
 
-(def offsets {:north [-1 0] :east [0 -1] :south [1 0] :west [0 1]})
-
 (defn cal-nbr-cost
   [grid]
   (let [adjacent-fn (fn [os pt dir]
-                      (->> (grid/adjacent (map offsets os) (grid/bounded grid) pt)
+                      (->> (grid/adjacent (map grid/offsets os) (grid/bounded grid) pt)
                            (map #(conj % dir))))]
     (fn [[row col dir]]
       (let [pt [row col]]
@@ -37,22 +35,22 @@
                     :west  (adjacent-fn [:east] pt dir)
                     (concat (adjacent-fn [:east] pt :west) (adjacent-fn [:west] pt :east)))
                \\ (case dir
-                    :north (adjacent-fn [:west] pt :east)
-                    :south (adjacent-fn [:east] pt :west)
-                    :east  (adjacent-fn [:south] pt :north)
-                    :west  (adjacent-fn [:north] pt :south))
-               \/ (case dir
                     :north (adjacent-fn [:east] pt :west)
                     :south (adjacent-fn [:west] pt :east)
-                    :east  (adjacent-fn [:north] pt :south)
-                    :west  (adjacent-fn [:south] pt :north)))
+                    :west  (adjacent-fn [:south] pt :north)
+                    :east  (adjacent-fn [:north] pt :south))
+               \/ (case dir
+                    :north (adjacent-fn [:west] pt :east)
+                    :south (adjacent-fn [:east] pt :west)
+                    :west  (adjacent-fn [:north] pt :south)
+                    :east  (adjacent-fn [:south] pt :north)))
              (reduce #(assoc %1 %2 1) {}))))))
 
 (defn part1
   []
   (time (let [grid (parse input)
               nbr-cost-fn (cal-nbr-cost grid)]
-          (->> (algo/dijkstra [0 0 :east] nbr-cost-fn)
+          (->> (algo/dijkstra [0 0 :west] nbr-cost-fn)
                keys (map pop) (into #{}) count))))
 
 
@@ -66,7 +64,7 @@
                       c (range col)
                       :let [[r dir] op]]
                   (->> (algo/dijkstra [r c dir] nbr-cost-fn) keys (map pop) (into #{}) count))
-                (for [op [[0 :east] [(dec col) :west]]
+                (for [op [[0 :west] [(dec col) :east]]
                       r (range row)
                       :let [[c dir] op]]
                   (->> (algo/dijkstra [r c dir] nbr-cost-fn) keys (map pop) (into #{}) count)))
