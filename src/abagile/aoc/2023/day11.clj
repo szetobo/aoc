@@ -8,49 +8,61 @@
 (def input (->> (util/read-input-split "2023/day11.txt" #"\n")
                 (map seq)))
 
-(defn expand-row
-  [grid]
-  (->> (for [row grid]
-         (cond-> [row] (every? #{\.} row) (conj row)))
-       (apply concat)))
-
-(defn expand
-  [grid]
-  (->> grid expand-row util/transpose expand-row util/transpose))
-
-(defn draw
-  [grid]
-  (map #(apply str %) grid))
+(defn parse
+  [input]
+  (->> input
+       (map-indexed (fn [r-idx row]
+                      (map-indexed (fn [c-idx elm]
+                                     [[r-idx c-idx] elm])
+                                   row)))
+       (apply concat)
+       (into (sorted-map))))
 
 (defn get-galaxy-cors
   [grid]
-  (->> grid
-       (map-indexed
-        (fn [r-idx row]
-          (map-indexed
-           (fn [c-idx elm] [[r-idx c-idx] elm])
-           row)))
-       (apply concat)
-       (filter #(->> % last #{\#}))
-       (map first)))
+  (->> grid (filter #(-> % last #{\#})) (map first)))
+
+(defn get-empty-cors
+  [grid]
+  (let [row  (->> grid (map #(get-in % [0 0])) (apply max))
+        col  (->> grid (map #(get-in % [0 1])) (apply max))
+        er   (for [r (range row) :when (every? #{\.} (->> grid (filter #(= r (get-in % [0 0]))) vals))] r)
+        ec   (for [c (range col) :when (every? #{\.} (->> grid (filter #(= c (get-in % [0 1]))) vals))] c)]
+    [er ec]))
+
+(defn galaxy-distance
+  ([[er ec] [r1 c1] [r2 c2]] (galaxy-distance 1 [er ec] [r1 c1] [r2 c2]))
+  ([factor [er ec] [r1 c1] [r2 c2]]
+   (let [rs (min r1 r2) re (max r1 r2)
+         cs (min c1 c2) ce (max c1 c2)]
+     (+ (util/manhattan-distance [r1 c1] [r2 c2])
+        (* factor (count (filter #(<= rs % re) er)))
+        (* factor (count (filter #(<= cs % ce) ec)))))))
+
 (comment
-  (->> sample draw)
-  (->> sample expand draw)
-  (->> sample expand get-galaxy-cors)
-  (->> input draw)
-  (->> input expand draw))
+  (->> sample parse get-galaxy-cors)
+  (->> sample parse get-empty-cors)
+  (galaxy-distance [[3 7] [2 5 8]] [0 3] [1 7])
+  (galaxy-distance [[3 7] [2 5 8]] [5 1] [9 4])
+  (->> input parse get-galaxy-cors)
+  (->> input parse get-empty-cors)
+  (comb/combinations (->> input parse get-galaxy-cors) 2))
 
 (defn part1
   []
-  (time (let [galaxies (->> input expand get-galaxy-cors)]
-           (->> (comb/combinations galaxies 2)
-                (map #(apply util/manhattan-distance %))
+  (time (let [grid    (parse input)
+              [er ec] (get-empty-cors grid)]
+           (->> (comb/combinations (get-galaxy-cors grid) 2)
+                (map #(apply galaxy-distance [er ec] %))
                 (reduce +)))))
-
 
 (defn part2
   []
-  (time (->> input)))
+  (time (let [grid    (parse input)
+              [er ec] (get-empty-cors grid)]
+           (->> (comb/combinations (get-galaxy-cors grid) 2)
+                (map #(apply galaxy-distance 999999 [er ec] %))
+                (reduce +)))))
 
 (defn -main [& _]
   (println "part 1:" (part1))
