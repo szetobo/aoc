@@ -45,18 +45,38 @@
 
 (defn part2
   []
-  (time (let [grid        (parse input)
-              [rows cols] (-> grid meta :dim)
-              S           (ffirst (filter #(= (last %) \S) grid))
+  (time (let [grid          (parse input)
+              [rows cols]   (-> grid meta :dim)
+              adjacent-fn   (cal-nbr-cost grid)
+              [sr sc :as S] (ffirst (filter #(= (last %) \S) grid))
+              s-nbrs        (into #{} (map first (adjacent-fn S)))
+              grid          (assoc grid S (cond
+                                            (= #{[(dec sr) sc] [sr (inc sc)]} s-nbrs) \L
+                                            (= #{[(dec sr) sc] [sr (dec sc)]} s-nbrs) \J
+                                            (= #{[(dec sr) sc] [(inc sr) sc]} s-nbrs) \|
+                                            (= #{[sr (inc sc)] [(inc sr) sc]} s-nbrs) \F
+                                            (= #{[sr (inc sc)] [sr (dec sc)]} s-nbrs) \-
+                                            (= #{[(inc sr) sc] [sr (dec sc)]} s-nbrs) \7))
               all-pts     (into #{} (keys grid))
-              borders     (into #{} (keys (algo/dijkstra S (cal-nbr-cost grid))))]
-          (->> (for [[row col :as pt] (set/difference all-pts borders)]
-                     ;; :let [n-pts (->> (for [row' (range 0 row)] [row' col]) (into #{}))
-                     ;;       e-pts (->> (for [col' (range 0 col)] [row col']) (into #{}))
-                     ;;       s-pts (->> (for [row' (range (inc row) rows)] [row' col]) (into #{}))
-                     ;;       w-pts (->> (for [col' (range (inc col) cols)] [row col']) (into #{}))]
-                     ;; :when (not (every? even? (map #(count (set/intersection borders %)) [n-pts s-pts e-pts w-pts])))]
-                 pt)
+              borders     (into #{} (keys (algo/dijkstra S adjacent-fn)))]
+          (->> (for [[row col] (set/difference all-pts borders)
+                     :let [n-pts (->> (for [row' (range 0 row)] [row' col]) (map borders) (remove nil?))
+                           w-pts (->> (for [col' (range 0 col)] [row col']) (map borders) (remove nil?))
+                           s-pts (->> (for [row' (range (inc row) rows)] [row' col]) (map borders) (remove nil?))
+                           e-pts (->> (for [col' (range (inc col) cols)] [row col']) (map borders) (remove nil?))]]
+                 [(let [syms (->> n-pts (map grid) (remove #{\|}))]
+                    (+ (->> syms (remove #{\-}) (partition 2) (map #(into #{} %)) (filter #{#{\F \J} #{\7 \L}}) count)
+                       (->> syms (filter #{\-}) count)))
+                  (let [syms (->> w-pts (map grid) (remove #{\-}))]
+                    (+ (->> syms (remove #{\|}) (partition 2) (map #(into #{} %)) (filter #{#{\F \J} #{\7 \L}}) count)
+                       (->> syms (filter #{\|}) count)))
+                  (let [syms (->> s-pts (map grid) (remove #{\|}))]
+                    (+ (->> syms (remove #{\-}) (partition 2) (map #(into #{} %)) (filter #{#{\F \J} #{\7 \L}}) count)
+                       (->> syms (filter #{\-}) count)))
+                  (let [syms (->> e-pts (map grid) (remove #{\-}))]
+                    (+ (->> syms (remove #{\|}) (partition 2) (map #(into #{} %)) (filter #{#{\F \J} #{\7 \L}}) count)
+                       (->> syms (filter #{\|}) count)))])
+               (filter #(every? odd? %))
                count))))
 
 
