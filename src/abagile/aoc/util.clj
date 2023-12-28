@@ -19,6 +19,10 @@
 
 (def diff #(if (<= %1 %2) (- %2 %1) (- %1 %2)))
 
+(defn abs
+  [n]
+  (if (neg? n) (* -1 n) n))
+
 (defn range+
   ([a] (range+ 0 a))
   ([a b]
