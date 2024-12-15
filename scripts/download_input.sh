@@ -15,9 +15,17 @@ fi
 # Read session cookie
 SESSION=$(cat "$SESSION_FILE")
 
-# Prompt for year and day
-read -p "Enter the Advent of Code year (e.g., 2024): " YEAR
-read -p "Enter the day (1-25): " DAY
+# Get the current year and day
+CURRENT_YEAR=$(date +%Y)
+CURRENT_DAY=$(date +%d | sed 's/^0//') # Removes leading zero
+
+# Prompt for year and default to current year if empty
+read -p "Enter the Advent of Code year (default: $CURRENT_YEAR): " YEAR
+YEAR=${YEAR:-$CURRENT_YEAR}
+
+# Prompt for day and default to today's day if empty
+read -p "Enter the day (1-25, default: $CURRENT_DAY): " DAY
+DAY=${DAY:-$CURRENT_DAY}
 
 # Validate input
 if ! [[ "$YEAR" =~ ^[0-9]{4}$ ]]; then
