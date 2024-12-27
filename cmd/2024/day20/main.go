@@ -16,7 +16,7 @@ type cell struct {
 type pqItem struct {
 	node     cell
 	distance int
-	// path     []cell
+	path     []cell
 }
 
 type queue []pqItem
@@ -78,28 +78,16 @@ func main() {
 	})
 
 	s.End = func(s *awk.Script) {
-		part1, part2 := 0, ""
+		part1, part2 := 0, 0
 
-		dist := dijkstra(inputs, S, E)
-		for row := 1; row <= len(inputs)-2; row++ {
-			for col := 1; col <= len(inputs[0])-2; col++ {
-				if inputs[row][col] == "#" {
-					inputs[row][col] = "."
-					newDist := dijkstra(inputs, S, E)
-					if newDist != 0 && newDist <= dist-100 {
-						part1++
-					}
-					inputs[row][col] = "#"
-				}
-			}
-		}
+		dest := dijkstra(inputs, S, E)
+		part1 = cheat(dest.path, 100, 2)
+		part2 = cheat(dest.path, 100, 20)
 
-		// for _, line := range inputs {
-		// 	fmt.Println(line)
-		// }
-		fmt.Println(len(inputs), len(inputs[0]), S, E, dist)
+		// fmt.Println(len(inputs), len(inputs[0]), S, E)
+		// fmt.Println(dest.node, dest.distance)
 		fmt.Printf("The result for part 1: %d\n", part1)
-		fmt.Printf("The result for part 2: %s\n", part2)
+		fmt.Printf("The result for part 2: %d\n", part2)
 	}
 
 	if err := s.Run(os.Stdin); err != nil {
@@ -107,17 +95,18 @@ func main() {
 	}
 }
 
-func dijkstra(board [][]string, S, E cell) int {
+func dijkstra(board [][]string, S, E cell) pqItem {
 	visited := map[cell]bool{}
 	distances := map[cell]int{}
 
-	pq := &queue{{S, 0}}
+	pq := &queue{{S, 0, []cell{S}}}
 	heap.Init(pq)
 
 	for pq.Len() > 0 {
 		curr := heap.Pop(pq).(pqItem)
 		if curr.node == E {
-			return distances[E]
+			// return distances[E]
+			return curr
 		}
 		if visited[curr.node] {
 			continue
@@ -134,9 +123,22 @@ func dijkstra(board [][]string, S, E cell) int {
 			}
 			if newDist < distances[edge.node] {
 				distances[edge.node] = newDist
-				heap.Push(pq, pqItem{edge.node, newDist})
+				heap.Push(pq, pqItem{edge.node, newDist, append(curr.path, edge.node)})
 			}
 		}
 	}
-	return 0
+	return pqItem{}
+}
+
+func cheat(path []cell, save, cheat int) int {
+	ret := 0
+	for i, s := range path[:len(path)-save] {
+		for j, e := range path[i+save:] {
+			d := int(math.Abs(float64(e.row-s.row)) + math.Abs(float64(e.col-s.col)))
+			if d <= cheat && d <= j {
+				ret++
+			}
+		}
+	}
+	return ret
 }
