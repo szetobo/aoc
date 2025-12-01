@@ -44,6 +44,8 @@ DAY_NUM=$(printf "%02d" "$DAY")
 # Define output file
 OUTPUT_FILE="resources/${YEAR}/day${DAY_NUM}.txt"
 
+mkdir -p `dirname "$OUTPUT_FILE"`
+
 # Download input file
 echo "Downloading Advent of Code input for Year $YEAR, Day $DAY_NUM..."
 curl -s -b "$SESSION" "$BASE_URL/$YEAR/day/$DAY/input" -o "$OUTPUT_FILE"
