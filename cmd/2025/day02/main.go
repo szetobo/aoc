@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"strconv"
-	// "math"
 	"os"
+	"strconv"
+	// "strings"
 
 	"github.com/spakin/awk"
 )
@@ -59,6 +59,16 @@ func main() {
 					}
 					part2 += i
 				}
+				// if n%2 == 0 {
+				// 	n /= 2
+				// 	if str[:n] == str[n:] {
+				// 		part1 += i
+				// 	}
+				// }
+				// s := str + str
+				// if strings.Contains(s[1:len(s)-1], str) {
+				// 	part2 += i
+				// }
 			}
 		}
 
