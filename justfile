@@ -17,7 +17,7 @@ run day=current_day year=current_year:
 
 testrun day=current_day year=current_year:
     fname=`printf 'day%02d' {{day}}`; \
-      go run ./{{src_dir}}/{{year}}/${fname}
+      go run ./{{src_dir}}/{{year}}/${fname} < {{inputs_dir}}/{{year}}/${fname}.sample
 
 download day=current_day year=current_year:
     mkdir -p resources/{{year}}
