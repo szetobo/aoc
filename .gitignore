@@ -16,3 +16,4 @@
 .Rhistory
 .Rproj.user
 .env
+node_modules
