@@ -12,6 +12,8 @@ alias r := run
 alias t := testrun
 alias d := download
 alias p := prepare
+alias tsr := tsrun
+alias tst := tstestrun
 
 run day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
@@ -33,3 +35,11 @@ prepare day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
       mkdir -p ./{{src_dir}}/{{year}}/${name}; \
       cp ./{{src_dir}}/main.go ./{{src_dir}}/{{year}}/${name}/main.go
+
+tsrun day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      bun run ./ts/{{year}}/${name} < {{inputs_dir}}/{{year}}/${name}.txt
+
+tstestrun day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      bun run ./ts/{{year}}/${name} < {{inputs_dir}}/{{year}}/${name}.sample
