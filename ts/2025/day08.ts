@@ -1,12 +1,9 @@
-class Point3D {
-	constructor(public x: number, public y: number, public z: number) {}
-
-	dist(other: Point3D): number {
-		return (this.x - other.x) ** 2 + (this.y - other.y) ** 2 + (this.z - other.z) ** 2
-	}
+interface DSU {
+	find(i: number): number
+	union(i: number, j: number): boolean
 }
 
-const createDSU = (size: number) => {
+const createDSU = (size: number): DSU => {
 	const parent = new Int32Array(size).map((_, i) => i)
 
 	const find = (i: number): number => {
@@ -33,20 +30,39 @@ const createDSU = (size: number) => {
 	return { find, union }
 }
 
+interface Point3D {
+	x: number
+	y: number
+	z: number
+}
+
+interface Edge {
+	a: number
+	b: number
+	w: number
+}
+
+const createEdge = (pts: Point3D[], a: number, b: number): Edge => {
+	const { x: ax, y: ay, z: az } = pts[a]!
+	const { x: bx, y: by, z: bz } = pts[b]!
+	return {
+		a, b,
+		w: (ax - bx) ** 2 + (ay - by) ** 2 + (az - bz) ** 2,
+	}
+}
 
 let part1 = 0, part2 = 0
 const inputs: Point3D[] = []
 for await (const line of console) {
 	if (line === "") { continue }
-	const [n1 = 0, n2 = 0, n3 = 0] = line.split(",").map(Number)
-	inputs.push(new Point3D(n1, n2, n3))
+	const [x = 0, y = 0, z = 0] = line.split(",").map(Number)
+	inputs.push({ x, y, z })
 }
 
-const edges: { a: number; b: number; w: number }[] = []
+const edges: Edge[] = []
 for (let a = 0; a < inputs.length; a++) {
 	for (let b = a + 1; b < inputs.length; b++) {
-		const w = inputs[a]!.dist(inputs[b]!)
-		edges.push({ a, b, w })
+		edges.push(createEdge(inputs, a, b))
 	}
 }
 edges.sort((a, b) => a.w - b.w)
