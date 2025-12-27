@@ -8,25 +8,23 @@ for await (const line of console) {
 
 	if (lights === undefined || joltages === undefined) { throw new Error("invalid input") }
 
-	const f1 = (lights: number[]): number[][] => {
-		const ret: number[][] = []
-		for (let i = 0; i < 1 << buttons.length; i++) {
-			let res = Array(lights.length).fill(0)
-			let pressed = Array(buttons.length).fill(0)
-			for (const [btn, bits] of buttons.entries()) {
-				if ((i >> btn & 1) === 1) {
-					for (const b of bits) {
-						res[b] ^= 1
-					}
-					pressed[btn] += 1
+	const solutions = new Map<string, number[][]>()
+	for (let i = 0; i < 1 << buttons.length; i++) {
+		let res = Array(lights.length).fill(0)
+		let pressed = Array(buttons.length).fill(0)
+		for (const [btn, bits] of buttons.entries()) {
+			if ((i >> btn & 1) === 1) {
+				for (const b of bits) {
+					res[b] ^= 1
 				}
-			}
-			if (res.every((v, i) => v === lights[i])) {
-				ret.push(pressed)
+				pressed[btn] += 1
 			}
 		}
-		return ret
+		const existing = solutions.get(res.join(""))
+		if (existing) { existing.push(pressed) } else { solutions.set(res.join(""), [pressed]) }
 	}
+
+	const f1 = (lights: number[]): number[][] => solutions.get(lights.join("")) ?? []
 	part1 += Math.min(...f1(lights).map(x => x.reduce((m, v) => m + v), 0))
 
 	const cache = new Map<string, number>()
