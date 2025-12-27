@@ -5,7 +5,7 @@ let buildLPS = (str: string): number[] => {
 	let length = 0, i = 1
 
 	while (i < n) {
-		if (str[i] == str[length]) {
+		if (str[i] === str[length]) {
 			length++
 			lps[i] = length
 			i++
@@ -23,22 +23,22 @@ let buildLPS = (str: string): number[] => {
 
 let part1 = 0, part2 = 0
 for await (const line of console) {
-	if (line == "") continue
+	if (line === "") { continue }
 	line.split(",").map(pair => {
 		const [n1, n2] = pair.split("-")
 		for (let i = Number(n1); i <= Number(n2); i++) {
 			let s = i.toString(), n = s.length
 			let lps = buildLPS(s)
 			let longest = Number(lps[n - 1]), period = n - longest
-			if (longest > 0 && n % period == 0) {
-				if ((longest / period) % 2 == 1) {
+			if (longest > 0 && n % period === 0) {
+				if ((longest / period) % 2 === 1) {
 					part1 += i
 				}
 				part2 += i
 			}
-			//if (n % 2 == 0) {
+			//if (n % 2 === 0) {
 			//	n /= 2
-			//	if (s.slice(0, n) == s.slice(-n)) {
+			//	if (s.slice(0, n) === s.slice(-n)) {
 			//		part1 += i
 			//	}
 			//}

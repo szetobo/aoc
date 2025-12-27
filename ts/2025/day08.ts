@@ -1,33 +1,30 @@
-interface DSU {
-	find(i: number): number
-	union(i: number, j: number): boolean
-}
+class DSU {
+	private parents: Int32Array
 
-const createDSU = (size: number): DSU => {
-	const parent = new Int32Array(size).map((_, i) => i)
+	constructor(size: number) {
+		this.parents = new Int32Array(size).map((_, i) => i)
+	}
 
-	const find = (i: number): number => {
-		if (parent[i] !== undefined) {
-			if (parent[i] !== i) {
-				parent[i] = find(parent[i])
+	find(i: number): number {
+		if (this.parents[i] !== undefined) {
+			if (this.parents[i] !== i) {
+				this.parents[i] = this.find(this.parents[i])
 			}
-			return parent[i]
+			return this.parents[i]
 		} else {
 			throw new Error("find index out of bound")
 		}
 	}
 
-	const union = (i: number, j: number): boolean => {
-		const rootI = find(i)
-		const rootJ = find(j)
+	union(i: number, j: number): boolean {
+		const rootI = this.find(i)
+		const rootJ = this.find(j)
 		if (rootI !== rootJ) {
-			parent[rootI] = rootJ
+			this.parents[rootI] = rootJ
 			return true
 		}
 		return false
 	}
-
-	return { find, union }
 }
 
 interface Point3D {
@@ -67,7 +64,7 @@ for (let a = 0; a < inputs.length; a++) {
 }
 edges.sort((a, b) => a.w - b.w)
 
-const dsu1 = createDSU(inputs.length)
+const dsu1 = new DSU(inputs.length)
 const iter = inputs.length === 20 ? 10 : inputs.length
 for (let i = 0; i < iter; i++) {
 	const { a, b } = edges[i]!
@@ -80,7 +77,7 @@ for (let i = 0; i < inputs.length; i++) {
 }
 part1 = [...groups.values()].sort((a, b) => b - a).slice(0, 3).reduce((m, v) => m * v, 1)
 
-const dsu2 = createDSU(inputs.length)
+const dsu2 = new DSU(inputs.length)
 let circuits = inputs.length
 for (const { a, b } of edges) {
 	if (dsu2.union(a, b)) {

@@ -5,8 +5,9 @@ let pickK = (line: number[], k: number): number => {
 	for (let remaining = k; remaining > 0; remaining--) {
 		let bestPos = start, bestDigit = 0
 		for (let i = start; i < n - (remaining - 1); i++) {
-			if (line[i]! > bestDigit) {
-				bestDigit = line[i]!
+			const val = line[i]!
+			if (val > bestDigit) {
+				bestDigit = val
 				bestPos = i
 			}
 		}
@@ -19,7 +20,7 @@ let pickK = (line: number[], k: number): number => {
 
 let part1 = 0, part2 = 0
 for await (const line of console) {
-	if (line == "") continue
+	if (line === "") { continue }
 	const tokens = line.split(/(\d)/).filter(Boolean).map(Number);
 	part1 += pickK(tokens, 2)
 	part2 += pickK(tokens, 12)
