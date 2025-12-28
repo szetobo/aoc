@@ -8,7 +8,7 @@ const adjacent8 = (c: point, limit: number): point[] => {
 	]
 	let adj: point[] = []
 	for (const pt of offset.map(([row, col]) => [c[0] + row, c[1] + col] as point)) {
-		if (pt.every(v => v >= 0 && v <= limit)) {
+		if (pt.every(v => v >= 0 && v < limit)) {
 			adj.push(pt)
 		}
 	}
