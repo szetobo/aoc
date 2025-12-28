@@ -1,22 +1,13 @@
 let buildLPS = (str: string): number[] => {
-	const n = str.length
-	const lps = new Array(n).fill(0)
-
-	let length = 0, i = 1
-
-	while (i < n) {
-		if (str[i] === str[length]) {
-			length++
-			lps[i] = length
-			i++
-		} else {
-			if (length != 0) {
-				length = lps[length - 1]
-			} else {
-				lps[i] = 0
-				i++
-			}
+	const lps = new Array(str.length).fill(0)
+	for (let i = 1, len = 0; i < str.length; i++) {
+		while (len > 0 && str[i] !== str[len]) {
+			len = lps[len - 1]
 		}
+		if (str[i] === str[len]) {
+			len++
+		}
+		lps[i] = len
 	}
 	return lps
 }
