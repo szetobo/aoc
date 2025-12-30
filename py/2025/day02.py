@@ -13,8 +13,10 @@ import sys
 #     return lps
 
 
-part1, part2 = 0, 0
-while line := sys.stdin.readline().strip():
+p1, p2 = 0, 0
+D = sys.stdin.read()
+lines = [line for line in D.split("\n") if line]
+for line in lines:
     pairs = [tuple(map(int, part.split("-"))) for part in line.split(",")]
     for n1, n2 in pairs:
         for i in range(n1, n2 + 1):
@@ -23,9 +25,9 @@ while line := sys.stdin.readline().strip():
             if n % 2 == 0:
                 n //= 2
                 if s[:n] == s[n:]:
-                    part1 += i
+                    p1 += i
             if s in (s + s)[1:-1]:
-                part2 += i
+                p2 += i
             # lps = build_lps(s)
             # longest = lps[n - 1]
             # period = n - longest
@@ -34,5 +36,5 @@ while line := sys.stdin.readline().strip():
             #         part1 += i
             #     part2 += i
 
-print(f"The result for part 1: {part1}")
-print(f"The result for part 2: {part2}")
+print(f"The result for part 1: {p1}")
+print(f"The result for part 2: {p2}")

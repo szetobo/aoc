@@ -9,15 +9,18 @@ src_dir := "cmd"
 inputs_dir := "resources"
 
 alias r := run
-alias t := testrun
+alias t := test
 alias d := download
 alias p := prepare
 alias tse := tsedit
 alias tsr := tsrun
-alias tst := tstestrun
+alias tst := tstest
 alias pye := pyedit
 alias pyr := pyrun
-alias pyt := pytestrun
+alias pyt := pytest
+alias hye := hyedit
+alias hyr := hyrun
+alias hyt := hytest
 
 default: run
 
@@ -26,7 +29,8 @@ prepare day=current_day year=current_year:
       mkdir -p ./{{src_dir}}/{{year}}/${name}; \
       cp -n ./{{src_dir}}/main.go ./{{src_dir}}/{{year}}/${name}/main.go; \
       cp -n ./ts/template.ts ./ts/{{year}}/${name}.ts; \
-      cp -n ./py/template.py ./py/{{year}}/${name}.py;
+      cp -n ./py/template.py ./py/{{year}}/${name}.py; \
+      cp -n ./hy/template.hy ./hy/{{year}}/${name}.hy;
 
 download day=current_day year=current_year:
     mkdir -p resources/{{year}}
@@ -44,7 +48,7 @@ run day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
       go run ./{{src_dir}}/{{year}}/${name} < {{inputs_dir}}/{{year}}/${name}.txt
 
-testrun day=current_day year=current_year:
+test day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
       go run ./{{src_dir}}/{{year}}/${name}.ts < {{inputs_dir}}/{{year}}/${name}.sample
 
@@ -56,7 +60,7 @@ tsrun day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
       bun run ./ts/{{year}}/${name}.ts < {{inputs_dir}}/{{year}}/${name}.txt
 
-tstestrun day=current_day year=current_year:
+tstest day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
       bun run ./ts/{{year}}/${name}.ts < {{inputs_dir}}/{{year}}/${name}.sample
 
@@ -68,6 +72,18 @@ pyrun day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
       uv run ./py/{{year}}/${name}.py < {{inputs_dir}}/{{year}}/${name}.txt
 
-pytestrun day=current_day year=current_year:
+pytest day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
       uv run ./py/{{year}}/${name}.py < {{inputs_dir}}/{{year}}/${name}.sample
+
+hyedit day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      $EDITOR -O ./hy/{{year}}/${name}.hy {{inputs_dir}}/{{year}}/${name}.txt
+
+hyrun day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      uv run hy ./hy/{{year}}/${name}.hy < {{inputs_dir}}/{{year}}/${name}.txt
+
+hytest day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      uv run hy ./hy/{{year}}/${name}.hy < {{inputs_dir}}/{{year}}/${name}.sample
