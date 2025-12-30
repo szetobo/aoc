@@ -70,4 +70,4 @@ pyrun day=current_day year=current_year:
 
 pytestrun day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
-      uv run ./ts/{{year}}/${name}.py < {{inputs_dir}}/{{year}}/${name}.sample
+      uv run ./py/{{year}}/${name}.py < {{inputs_dir}}/{{year}}/${name}.sample
