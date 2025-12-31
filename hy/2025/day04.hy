@@ -30,9 +30,9 @@
 					       #(r c))))
 			(when (< cnt 4)
 				(if (= i 0)
-					(setv p1 (inc p1))
+					(+= p1 1)
 					(do (setv (get lines row col) "x")
-					    (setv p2 (inc p2)))))))
+					    (+= p2 1))))))
 	(when (and (> i 0) (= curr p2))
 		(break)))
 

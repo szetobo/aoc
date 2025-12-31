@@ -14,8 +14,8 @@
 	      num (int (cut line 1 None)))
 	(for [i (range num)]
 		(setv pos (% (+ pos d) 100))
-		(when (= 0 pos) (setv p2 (inc p2))))
-	(when (= 0 pos) (setv p1 (inc p1))))
+		(when (= 0 pos) (+= p2 1)))
+	(when (= 0 pos) (+= p1 1)))
 
 (print f"The result for part 1: {p1}")
 (print f"The result for part 2: {p2}")

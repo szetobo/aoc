@@ -16,9 +16,9 @@
 			      n (len s))
 			(when (= 0 (% n 2))
 				(when (= (cut s 0 (// n 2)) (cut s (// n 2) None))
-					(setv p1 (+ p1 i))))
+					(+= p1 i)))
 			(when (in s (cut (+ s s) 1 -1))
-			       	(setv p2 (+ p2 i))))))
+				(+= p2 i)))))
 
 (print f"The result for part 1: {p1}")
 (print f"The result for part 2: {p2}")

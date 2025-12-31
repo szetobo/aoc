@@ -18,12 +18,12 @@
 				(setv [pos digit] [p d])))
 		(.append res (str digit))
 		(setv start (inc pos)))
-	(-> (.join "" res) int))
+	(int (.join "" res)))
 
 (for [line lines]
 	(setv digits (lfor ch (list line) (int ch)))
-	(setv p1 (+ p1 (pick digits 2)))
-	(setv p2 (+ p2 (pick digits 12))))
+	(+= p1 (pick digits 2))
+	(+= p2 (pick digits 12)))
 
 (print f"The result for part 1: {p1}")
 (print f"The result for part 2: {p2}")
