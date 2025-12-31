@@ -1,11 +1,11 @@
 import itertools
 import math
 import sys
-from operator import itemgetter, truediv
+from operator import itemgetter
 
 
 class DSU:
-    def __init__(self, n):
+    def __init__(self):
         self.parent = {}
 
     def find(self, i):
@@ -37,7 +37,7 @@ for a, b in itertools.combinations(lines, 2):
 E.sort(key=itemgetter(2))
 
 n = len(lines)
-dsu = DSU(n)
+dsu = DSU()
 for i in range(10 if n == 20 else n):
     a, b, _ = E[i]
     dsu.union(a, b)
@@ -47,7 +47,7 @@ for i in lines:
     M[root] = M.get(root, 0) + 1
 p1 = math.prod(sorted(M.values())[-3:])
 
-dsu = DSU(n)
+dsu = DSU()
 m = n
 for a, b, _ in E:
     if dsu.union(a, b):
