@@ -5,13 +5,14 @@ set shell := ["bash", "-cu"]
 current_year := `date +%Y`
 current_day := `date +%d`
 
-src_dir := "cmd"
 inputs_dir := "resources"
 
-alias r := run
-alias t := test
-alias d := download
 alias p := prepare
+alias d := download
+alias e := edit
+alias goe := goedit
+alias gor := gorun
+alias got := gotest
 alias tse := tsedit
 alias tsr := tsrun
 alias tst := tstest
@@ -22,12 +23,15 @@ alias hye := hyedit
 alias hyr := hyrun
 alias hyt := hytest
 
-default: run
+default: edit
 
 prepare day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
-      mkdir -p ./{{src_dir}}/{{year}}/${name}; \
-      cp -n ./{{src_dir}}/main.go ./{{src_dir}}/{{year}}/${name}/main.go; \
+      mkdir -p ./go/{{year}}/${name}; \
+      mkdir -p ./ts/{{year}}; \
+      mkdir -p ./py/{{year}}; \
+      mkdir -p ./hy/{{year}}; \
+      cp -n ./go/main.go ./go/{{year}}/${name}/main.go; \
       cp -n ./ts/template.ts ./ts/{{year}}/${name}.ts; \
       cp -n ./py/template.py ./py/{{year}}/${name}.py; \
       cp -n ./hy/template.hy ./hy/{{year}}/${name}.hy;
@@ -42,15 +46,23 @@ download day=current_day year=current_year:
 
 edit day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
-      $EDITOR -O ./{{src_dir}}/{{year}}/${name}.go {{inputs_dir}}/{{year}}/${name}.txt
+      $EDITOR ./go/{{year}}/${name}/main.go \
+        ./ts/{{year}}/${name}.ts \
+        ./py/{{year}}/${name}.py \
+        ./hy/{{year}}/${name}.hy \
+        {{inputs_dir}}/{{year}}/${name}.txt
 
-run day=current_day year=current_year:
+goedit day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
-      go run ./{{src_dir}}/{{year}}/${name} < {{inputs_dir}}/{{year}}/${name}.txt
+      $EDITOR -O ./go/{{year}}/${name}/main.go {{inputs_dir}}/{{year}}/${name}.txt
 
-test day=current_day year=current_year:
+gorun day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
-      go run ./{{src_dir}}/{{year}}/${name}.ts < {{inputs_dir}}/{{year}}/${name}.sample
+      go run ./go/{{year}}/${name} < {{inputs_dir}}/{{year}}/${name}.txt
+
+gotest day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      go run ./go/{{year}}/${name}.ts < {{inputs_dir}}/{{year}}/${name}.sample
 
 tsedit day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
