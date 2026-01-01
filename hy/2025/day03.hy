@@ -2,28 +2,26 @@
 (import hyrule *)
 (require hyrule *)
 
-(setv p1 0
-      p2 0)
+(setv p1 0 p2 0)
 
 (setv D (.read sys.stdin)
       lines (lfor line (.split D "\n") :if line line))
 
-(defn pick [line k]
-	(setv start 0
-	      res [])
-	(for [rem (range k 0 -1)]
-		(setv [pos digit] [start 0])
-		(for [p (range start (inc (- (len line) rem)))]
-			(when (> (setx d (get line p)) digit)
-				(setv [pos digit] [p d])))
-		(.append res (str digit))
-		(setv start (inc pos)))
-	(int (.join "" res)))
+(defn pick [s n]
+  (setv res (* ["0"] n)
+        sta 0)
+  (for [i (range n 0 -1)]
+    (setv [p d] [sta "0"])
+    (for [j (range sta (inc (- (len s) i)))]
+       (when (> (setx v (get s j)) d)
+         (setv [p d] [j v])))
+    (setv (get res (- n i)) d
+          sta (inc p)))
+  (int (.join "" (lfor d res (str d)))))
 
 (for [line lines]
-	(setv digits (lfor ch (list line) (int ch)))
-	(+= p1 (pick digits 2))
-	(+= p2 (pick digits 12)))
+  (+= p1 (pick line 2))
+  (+= p2 (pick line 12)))
 
-(print f"The result for part 1: {p1}")
-(print f"The result for part 2: {p2}")
+(print f"Part 1: {p1}")
+(print f"Part 2: {p2}")

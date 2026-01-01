@@ -1,29 +1,25 @@
-let pickK = (line: number[], k: number): number => {
-	const n = line.length
-	let res: number[] = []
-	let start = 0
-	for (let remaining = k; remaining > 0; remaining--) {
-		let bestPos = start, bestDigit = 0
-		for (let i = start; i < n - (remaining - 1); i++) {
-			const val = line[i]!
-			if (val > bestDigit) {
-				bestDigit = val
-				bestPos = i
+let pickK = (s: string, n: number): number => {
+	let res: string[] = Array(n).fill("0")
+	for (let i = n, sta = 0; i > 0; i--) {
+		let p = sta, d = "0"
+		for (let j = sta; j < s.length - i + 1; j++) {
+			const val = s[j]!
+			if (val > d) {
+				p = j, d = val
 			}
 		}
-		res = [...res, bestDigit]
-		start = bestPos + 1
+		res[n - i] = d
+		sta = p + 1
 	}
 	return Number(res.join(""))
 
 }
 
-let part1 = 0, part2 = 0
+let p1 = 0, p2 = 0
 for await (const line of console) {
 	if (line === "") { continue }
-	const tokens = line.split(/(\d)/).filter(Boolean).map(Number);
-	part1 += pickK(tokens, 2)
-	part2 += pickK(tokens, 12)
+	p1 += pickK(line, 2)
+	p2 += pickK(line, 12)
 }
-console.log("The result for part 1: %d", part1)
-console.log("The result for part 2: %d", part2)
+console.log("Part 1: %d", p1)
+console.log("Part 2: %d", p2)

@@ -2,53 +2,45 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strconv"
-
-	"github.com/spakin/awk"
+	"strings"
 )
 
-func pickK(line string, k int) int {
-	n := len(line)
-	result := make([]byte, 0, k)
-
-	start := 0
-	for remaining := k; remaining > 0; remaining-- {
-		bestDigit := byte('0' - 1)
-		bestPos := start
-		for i := start; i < n-(remaining-1); i++ {
-			if line[i] > bestDigit {
-				bestDigit = line[i]
-				bestPos = i
+func pick(s string, n int) int {
+	result := make([]byte, n)
+	for i, sta := n, 0; i > 0; i-- {
+		p, d := sta, byte('0')
+		for j := sta; j < len(s)-i+1; j++ {
+			val := s[j]
+			if val > d {
+				p, d = j, val
 			}
 		}
-		result = append(result, bestDigit)
-		start = bestPos + 1
+		result[n-i] = d
+		sta = p + 1
 	}
-
 	ret, _ := strconv.Atoi(string(result))
 	return ret
 }
 
 func main() {
-	inputs := []string{}
-
-	s := awk.NewScript()
-	s.AppendStmt(nil, func(s *awk.Script) {
-		inputs = append(inputs, s.F(0).String())
-	})
-	s.End = func(s *awk.Script) {
-		part1, part2 := 0, 0
-		for _, x := range inputs {
-			part1 += pickK(x, 2)
-			part2 += pickK(x, 12)
-		}
-
-		fmt.Printf("The result for part 1: %d\n", part1)
-		fmt.Printf("The result for part 2: %d\n", part2)
-	}
-
-	if err := s.Run(os.Stdin); err != nil {
+	data, err := io.ReadAll(os.Stdin)
+	if err != nil {
 		panic(err)
 	}
+	lines := strings.Split(string(data), "\n")
+
+	p1, p2 := 0, 0
+
+	for _, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
+		p1 += pick(line, 2)
+		p2 += pick(line, 12)
+	}
+	fmt.Printf("Part 1: %d\n", p1)
+	fmt.Printf("Part 2: %d\n", p2)
 }
