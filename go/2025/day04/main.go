@@ -2,84 +2,71 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
-
-	"github.com/spakin/awk"
+	"strings"
 )
 
-type cell struct {
-	row, col int
-}
+type point = [2]int
 
-func (c *cell) adjacent8(limit int) []cell {
-	checkPoints := []cell{
-		{c.row - 1, c.col - 1}, {c.row - 1, c.col}, {c.row - 1, c.col + 1},
-		{c.row, c.col - 1}, {c.row, c.col + 1},
-		{c.row + 1, c.col - 1}, {c.row + 1, c.col}, {c.row + 1, c.col + 1},
+func adjacent8(pt point, limit int) []point {
+	row, col := pt[0], pt[1]
+	offsets := []point{
+		{-1, -1}, {-1, 0}, {-1, 1},
+		{0, -1}, {0, 1},
+		{1, -1}, {1, 0}, {1, 1},
 	}
-	adj := make([]cell, 0, 8)
-	for _, pt := range checkPoints {
-		if pt.row >= 0 && pt.row < limit && pt.col >= 0 && pt.col < limit {
-			adj = append(adj, pt)
+	adj := make([]point, 0)
+	for _, offset := range offsets {
+		nr, nc := row+offset[0], col+offset[1]
+		if 0 <= nr && nr < limit && 0 <= nc && nc < limit {
+			adj = append(adj, point{nr, nc})
 		}
 	}
 	return adj
 }
 
-func (c *cell) get(grid [][]byte) byte {
-	return grid[c.row][c.col]
-}
-
-func (c *cell) set(grid [][]byte, v byte) {
-	grid[c.row][c.col] = v
-}
-
 func main() {
-	inputs := [][]byte{}
-
-	s := awk.NewScript()
-	s.Begin = func(s *awk.Script) {
-		s.SetFS("")
+	data, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
 	}
-	s.AppendStmt(nil, func(s *awk.Script) {
-		inputs = append(inputs, []byte(s.F(0).String()))
-	})
-	s.End = func(s *awk.Script) {
-		part1, part2 := 0, 0
+	lines := [][]string{}
+	for _, line := range strings.Split(string(data), "\n") {
+		if len(line) == 0 {
+			continue
+		}
+		lines = append(lines, strings.Split(line, ""))
+	}
 
-		for i := 0; ; i++ {
-			done := part2
-			for row := range inputs {
-				for col, val := range inputs[row] {
-					center := cell{row, col}
-					if val == '@' {
-						cnt := 0
-						for _, c := range center.adjacent8(len(inputs)) {
-							if c.get(inputs) == '@' {
-								cnt++
-							}
+	p1, p2 := 0, 0
+
+	for i := 0; ; i++ {
+		done := p2
+		for row, line := range lines {
+			for col, ch := range line {
+				if ch == "@" {
+					cnt := 0
+					for _, pt := range adjacent8(point{row, col}, len(lines)) {
+						if lines[pt[0]][pt[1]] == "@" {
+							cnt++
 						}
-						if cnt < 4 {
-							if i == 0 {
-								part1++
-							} else {
-								center.set(inputs, 'x')
-								part2++
-							}
+					}
+					if cnt < 4 {
+						if i == 0 {
+							p1++
+						} else {
+							line[col] = "x"
+							p2++
 						}
 					}
 				}
 			}
-			if i > 0 && done == part2 {
-				break
-			}
 		}
-
-		fmt.Printf("The result for part 1: %d\n", part1)
-		fmt.Printf("The result for part 2: %d\n", part2)
+		if (i > 0) && (done-p2) == 0 {
+			break
+		}
 	}
-
-	if err := s.Run(os.Stdin); err != nil {
-		panic(err)
-	}
+	fmt.Printf("Part 1: %d\n", p1)
+	fmt.Printf("Part 2: %d\n", p2)
 }
