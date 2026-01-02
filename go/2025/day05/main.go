@@ -3,68 +3,60 @@ package main
 import (
 	"cmp"
 	"fmt"
+	"io"
 	"os"
 	"slices"
-
-	"github.com/spakin/awk"
+	"strconv"
+	"strings"
 )
 
+type Range = [2]int
+
 func main() {
-	ranges := [][]int{}
-	inputs := []int{}
-
-	s := awk.NewScript()
-	s.Begin = func(s *awk.Script) {
-		s.SetFPat(`\d+`)
-	}
-	s.AppendStmt(
-		func(s *awk.Script) bool { return s.NF > 0 },
-		func(s *awk.Script) {
-			if s.NF == 2 {
-				ranges = append(ranges, s.FInts())
-			} else {
-				inputs = append(inputs, s.F(1).Int())
-			}
-		},
-	)
-	s.End = func(s *awk.Script) {
-		part1, part2 := 0, 0
-
-		slices.SortFunc(ranges, func(a, b []int) int {
-			return cmp.Or(
-				cmp.Compare(a[0], b[0]),
-				cmp.Compare(a[1], b[1]),
-			)
-		})
-		last, merged := 0, ranges[:1]
-		for i := 1; i < len(ranges); i++ {
-			prev, cur := merged[last], ranges[i]
-			if cur[0] <= prev[1] {
-				if cur[1] > prev[1] {
-					prev[1] = cur[1]
-				}
-			} else {
-				merged = append(merged, cur)
-				last++
-			}
-		}
-		for _, x := range inputs {
-			for _, r := range merged {
-				if x >= r[0] && x <= r[1] {
-					part1++
-					break
-				}
-			}
-		}
-		for _, r := range merged {
-			part2 += r[1] - r[0] + 1
-		}
-
-		fmt.Printf("The result for part 1: %d\n", part1)
-		fmt.Printf("The result for part 2: %d\n", part2)
-	}
-
-	if err := s.Run(os.Stdin); err != nil {
+	data, err := io.ReadAll(os.Stdin)
+	if err != nil {
 		panic(err)
 	}
+	ranges := []Range{}
+	lines := []int{}
+	parts := strings.Split(string(data), "\n\n")
+	for _, line := range strings.Split(parts[0], "\n") {
+		r := Range{}
+		for i, str := range strings.Split(line, "-") {
+			r[i], _ = strconv.Atoi(str)
+		}
+		ranges = append(ranges, r)
+	}
+	for _, line := range strings.Split(parts[1], "\n") {
+		n, _ := strconv.Atoi(line)
+		lines = append(lines, n)
+	}
+
+	p1, p2 := 0, 0
+
+	for _, n := range lines {
+		for _, r := range ranges {
+			s, e := r[0], r[1]
+			if s <= n && n <= e {
+				p1++
+				break
+			}
+		}
+	}
+
+	slices.SortFunc(ranges, func(a, b [2]int) int {
+		return cmp.Or(cmp.Compare(a[0], b[0]), cmp.Compare(a[1], b[1]))
+	})
+
+	lst := 0
+	for _, r := range ranges {
+		s, e := r[0], r[1]
+		if e > lst {
+			p2 += e - max(s, lst+1) + 1
+		}
+		lst = max(lst, e)
+	}
+
+	fmt.Printf("Part 1: %d\n", p1)
+	fmt.Printf("Part 2: %d\n", p2)
 }
