@@ -2,35 +2,27 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
-
-	"github.com/spakin/awk"
+	"strings"
 )
 
 func main() {
-	inputs := []string{}
-
-	s := awk.NewScript()
-	s.Begin = func(s *awk.Script) {
-		s.SetFS("")
-		// s.SetFPat(`\d+`)
-	}
-	s.AppendStmt(
-		func(s *awk.Script) bool { return s.NF > 0 },
-		func(s *awk.Script) { inputs = append(inputs, s.F(0).String()) },
-	)
-	s.End = func(s *awk.Script) {
-		part1, part2 := 0, 0
-
-		for _, x := range inputs {
-			fmt.Println(x)
-		}
-
-		fmt.Printf("The result for part 1: %d\n", part1)
-		fmt.Printf("The result for part 2: %d\n", part2)
-	}
-
-	if err := s.Run(os.Stdin); err != nil {
+	data, err := io.ReadAll(os.Stdin)
+	if err != nil {
 		panic(err)
 	}
+	lines := []string{}
+	for _, line := range strings.Split(string(data), "\n") {
+		if len(line) == 0 {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	fmt.Println(lines)
+
+	p1, p2 := 0, 0
+
+	fmt.Printf("Part 1: %d\n", p1)
+	fmt.Printf("Part 2: %d\n", p2)
 }
