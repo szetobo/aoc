@@ -1,45 +1,46 @@
-let part1 = 0, part2 = 0
-let inputs: number[][] = [], ops: string[] = [], chars: string[][] = []
+let p1 = 0, p2 = 0
+let lines: string[] = []
 for await (const line of console) {
 	if (line === "") { continue }
-	chars.push(line.split(""))
-	if (line[0] === "+" || line[0] === "*") {
-		ops = line.split(/\s+/)
-	} else {
-		inputs.push(line.split(/\s+/).map(Number))
-	}
+	lines.push(line)
 }
 
-for (const [i, op] of ops.entries()) {
-	part1 += (op === "+") ?
-		inputs.reduce((m, v) => m + (v[i] ?? 0), 0) :
-		inputs.reduce((m, v) => m * (v[i] ?? 0), 1)
+function transpose<T>(matrix: T[][]): T[][] {
+	return (matrix[0] === undefined) ? [] : matrix[0].map((_, j) => matrix.map(r => r[j]!))
 }
 
-chars = chars[0]!.map((_, i) => chars.map(r => r[i]!))
+let N = lines.map(line => line.split(/\s+/).filter(Boolean))
+for (const col of transpose(N)) {
+	const ints = col.slice(0, -1).map(Number)
+	const op = col.at(-1)
+	p1 += op === "+" ?
+		ints.reduce((m, v) => m + v, 0) :
+		ints.reduce((m, v) => m * v, 1)
+}
 
-let fs = true, op = "", res = 0
-for (const [i, row] of chars.entries()) {
-	if (fs) {
-		res = (op = row.at(-1)!) === "+" ? 0 : 1
-		fs = !fs
+N = transpose(lines.map(line => line.split("")))
+let fs = true, OP = "", R = 0
+for (const [i, col] of N.entries()) {
+	const num = Number(col.slice(0, -1).join(""))
+	const op = col.at(-1)!
+	if (fs && op != " ") {
+		OP = op
+		R = OP === "+" ? 0 : 1
+		fs = false
 	}
-	const str = row.slice(0, -1).join("")
-	if (str === "    ") {
+	if (num === 0) {
 		fs = true
 	} else {
-		let val = Number(str)
-		if (op === "+") {
-			res += val
+		if (OP === "+") {
+			R += num
 		} else {
-			res *= val
+			R *= num
 		}
 	}
-	if (fs || i == chars.length - 1) {
-		part2 += res
+	if (fs || i === N.length - 1) {
+		p2 += R
 	}
-
 }
 
-console.log("The result for part 1: %d", part1)
-console.log("The result for part 2: %d", part2)
+console.log("Part 1: %d", p1)
+console.log("Part 2: %d", p2)
