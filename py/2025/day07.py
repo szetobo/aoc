@@ -23,8 +23,7 @@ for row, col in product(range(n - 1), range(n - 1)):
             lines[row + 1][col] = "|"
             M[(row + 1, col)] += cnt
 
-r = len(lines) - 1
-p2 = sum(M.get((r, col), 0) for col, ch in enumerate(lines[-1]) if ch == "|")
+p2 = sum(M.get((n - 1, col), 0) for col, ch in enumerate(lines[-1]) if ch == "|")
 
-print(f"The result for part 1: {p1}")
-print(f"The result for part 2: {p2}")
+print(f"Part 1: {p1}")
+print(f"Part 2: {p2}")
