@@ -4,8 +4,7 @@
 (import hyrule *)
 (require hyrule *)
 
-(setv p1 0
-      p2 0)
+(setv p1 0 p2 0)
 
 (setv D (.read sys.stdin))
 (setv lines (lfor line (.split D "\n") :if line
@@ -53,5 +52,5 @@
              (not (intersect #(x1 y1) #(x2 y2))))
     (setv p2 (max area p2))))
 
-(print f"The result for part 1: {p1}")
-(print f"The result for part 2: {p2}")
+(print f"Part 1: {p1}")
+(print f"Part 2: {p2}")

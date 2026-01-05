@@ -62,5 +62,5 @@ for a, b in combinations(lines, 2):
     ):
         p2 = max(area, p2)
 
-print(f"The result for part 1: {p1}")
-print(f"The result for part 2: {p2}")
+print(f"Part 1: {p1}")
+print(f"Part 2: {p2}")

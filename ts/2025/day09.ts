@@ -1,4 +1,4 @@
-type Point = { x: number, y: number }
+type Point = [x: number, y: number]
 
 const minmax = (a: number, b: number): [number, number] => {
 	return [Math.min(a, b), Math.max(a, b)]
@@ -6,16 +6,16 @@ const minmax = (a: number, b: number): [number, number] => {
 
 const cache = new Map<string, boolean>()
 
-const contains = (pts: Point[], { x, y }: Point): boolean => {
+const contains = (pts: Point[], [x, y]: Point): boolean => {
 	const key = `${x},${y}`
 	let ret = cache.get(key)
 	if (ret !== undefined) { return ret }
 
 	let cnt = 0
 	for (let i = 0; i < pts.length; i++) {
-		const [a, b] = [pts[i]!, pts[(i + 1) % pts.length]!]
-		const [x1, x2] = minmax(a.x, b.x)
-		const [y1, y2] = minmax(a.y, b.y)
+		const [[ax, ay], [bx, by]] = [pts[i]!, pts[(i + 1) % pts.length]!]
+		const [x1, x2] = minmax(ax, bx)
+		const [y1, y2] = minmax(ay, by)
 		if (x === x1 && x === x2 && y >= y1 && y <= y2) {
 			cache.set(key, true)
 			return true
@@ -37,17 +37,17 @@ const contains = (pts: Point[], { x, y }: Point): boolean => {
 }
 
 const intersect = (pts: Point[], a: Point, b: Point): boolean => {
-	const { x: ax, y: ay } = a
-	const { x: bx, y: by } = b
+	const [ax, ay] = a
+	const [bx, by] = b
 
 	const key = `${ax},${ay}-${bx},${by}`
 	let ret = cache.get(key)
 	if (ret !== undefined) { return ret }
 
-	for (let i = 0; i < pts.length; i++) {
-		const [a, b] = [pts[i]!, pts[(i + 1) % pts.length]!]
-		const [x1, x2] = minmax(a.x, b.x)
-		const [y1, y2] = minmax(a.y, b.y)
+	for (const [i, [cx, cy]] of pts.entries()) {
+		const [dx, dy] = pts[(i + 1) % pts.length]!
+		const [x1, x2] = minmax(cx, dx)
+		const [y1, y2] = minmax(cy, dy)
 		if (x1 === x2) {
 			if (ax < x1 && x1 < bx && ay < y2 && y1 < by) {
 				cache.set(key, true)
@@ -64,35 +64,30 @@ const intersect = (pts: Point[], a: Point, b: Point): boolean => {
 	return false
 }
 
-let part1 = 0, part2 = 0
-const inputs: Point[] = []
-for await (const line of console) {
-	if (line === "") { continue }
-	const [x, y] = line.split(",").map(Number)
-	if (x !== undefined && y !== undefined) {
-		inputs.push({ x, y })
-	}
-}
-for (const [i, a] of inputs.slice(0, -2).entries()) {
-	for (const [_, b] of inputs.slice(i + 1).entries()) {
-		const [x1, x2] = minmax(a.x, b.x)
-		const [y1, y2] = minmax(a.y, b.y)
+let p1 = 0, p2 = 0
+const lines: Point[] = (await Bun.stdin.text()).trim().split("\n")
+	.map(line => line.split(",").map(Number))
+	.map(([x = 0, y = 0]) => [x, y])
+for (const [i, [ax, ay]] of lines.slice(0, -2).entries()) {
+	for (const [_, [bx, by]] of lines.slice(i + 1).entries()) {
+		const [x1, x2] = minmax(ax, bx)
+		const [y1, y2] = minmax(ay, by)
 
 		if (x1 === x2 || y1 === y2) { continue }
 
 		const area = (x2 - x1 + 1) * (y2 - y1 + 1)
-		part1 = Math.max(part1, area)
+		p1 = Math.max(p1, area)
 
-		if (area <= part2) { continue }
+		if (area <= p2) { continue }
 
-		if (contains(inputs, { x: x1, y: y1 }) &&
-			contains(inputs, { x: x1, y: y2 }) &&
-			contains(inputs, { x: x2, y: y1 }) &&
-			contains(inputs, { x: x2, y: y2 }) &&
-			!intersect(inputs, { x: x1, y: y1 }, { x: x2, y: y2 })) {
-			part2 = Math.max(part2, area)
+		if (contains(lines, [x1, y1]) &&
+			contains(lines, [x1, y2]) &&
+			contains(lines, [x2, y1]) &&
+			contains(lines, [x2, y2]) &&
+			!intersect(lines, [x1, y1], [x2, y2])) {
+			p2 = Math.max(p2, area)
 		}
 	}
 }
-console.log("The result for part 1: %d", part1)
-console.log("The result for part 2: %d", part2)
+console.log("Part 1: %d", p1)
+console.log("Part 2: %d", p2)
