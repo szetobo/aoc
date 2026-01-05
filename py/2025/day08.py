@@ -56,5 +56,5 @@ for a, b, _ in E:
             p2 = a[0] * b[0]
             break
 
-print(f"The result for part 1: {p1}")
-print(f"The result for part 2: {p2}")
+print(f"Part 1: {p1}")
+print(f"Part 2: {p2}")
