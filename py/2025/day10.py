@@ -19,7 +19,7 @@ for lights, *buttons, joltages in lines:
             if (i >> btn) & 1 == 1:
                 for b in bits:
                     res[b] ^= 1
-                pressed[btn] += 1
+                pressed[btn] = 1
         S["".join("#" if i == 1 else "." for i in res)].append(pressed)
 
     p1 += min(sum(s) for s in S["".join(lights)])
@@ -49,5 +49,5 @@ for lights, *buttons, joltages in lines:
 
     p2 += f2(tuple(joltages))
 
-print(f"The result for part 1: {p1}")
-print(f"The result for part 2: {p2}")
+print(f"Part 1: {p1}")
+print(f"Part 2: {p2}")

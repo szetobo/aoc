@@ -4,8 +4,7 @@
 (import hyrule *)
 (require hyrule *)
 
-(setv p1 0
-      p2 0)
+(setv p1 0 p2 0)
 
 (setv D (.read sys.stdin)
       lines (lfor line (.split D "\n") :if line (.split line)))
@@ -21,7 +20,7 @@
     (for [[btn bits] (enumerate B)]
       (when (= 1 (-> i (>> btn) (& 1)))
         (for [b bits] (^= (get res b) 1))
-        (+= (get pressed btn) 1)))
+        (setv (get pressed btn) 1)))
     (.append (get S (.join "" (lfor x res (if (= x 1) "#" ".")))) pressed))
 
   (+= p1 (min (lfor s (get S (.join "" L)) (sum s))))
@@ -45,5 +44,5 @@
 
   (+= p2 (f2 (tuple J))))
 
-(print f"The result for part 1: {p1}")
-(print f"The result for part 2: {p2}")
+(print f"Part 1: {p1}")
+(print f"Part 2: {p2}")

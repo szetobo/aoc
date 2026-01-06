@@ -62,7 +62,7 @@ gorun day=current_day year=current_year:
 
 gotest day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
-      go run ./go/{{year}}/${name}.ts < {{inputs_dir}}/{{year}}/${name}.sample
+      go run ./go/{{year}}/${name} < {{inputs_dir}}/{{year}}/${name}.sample
 
 tsedit day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \

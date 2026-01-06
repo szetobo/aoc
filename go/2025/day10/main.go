@@ -1,208 +1,134 @@
 package main
 
 import (
-	"cmp"
 	"fmt"
+	"io"
 	"math"
-	"math/bits"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/spakin/awk"
 )
 
 func main() {
-	part1, part2 := 0, 0
+	p1, p2 := 0, 0
 
-	s := awk.NewScript()
-	s.AppendStmt(
-		nil,
-		// func(s *awk.Script) bool { return s.NR == 1 },
-		func(s *awk.Script) {
-			ins := s.FStrings()
-			N := len(ins)
-			light := 0
-			for i, ch := range ins[0][1 : len(ins[0])-1] {
-				if ch == '#' {
-					light += 1 << i
-				}
-			}
-			// fmt.Println(light)
-			joltages := []int{}
-			for _, s := range strings.Split(ins[N-1][1:len(ins[N-1])-1], ",") {
-				n, _ := strconv.Atoi(s)
-				joltages = append(joltages, n)
-			}
-			// fmt.Println(joltages)
-			buttons := []int{}
-			BJ := [][]int{}
-			for _, b := range ins[1 : len(ins)-1] {
-				v := 0
-				bj := make([]int, len(joltages))
-				for _, s := range strings.Split(b[1:len(b)-1], ",") {
-					n, _ := strconv.Atoi(s)
-					v ^= 1 << n
-					bj[n]++
-				}
-				buttons = append(buttons, v)
-				BJ = append(BJ, bj)
-			}
-			// fmt.Println(buttons)
-			// fmt.Println(BJ)
-
-			// f1 := func(buttons []int, light int) int {
-			// 	for i := 1; ; i++ {
-			// 		for _, b := range CombinationsBitmask(len(buttons), i) {
-			// 			v := 0
-			// 			for _, j := range b {
-			// 				v ^= buttons[j]
-			// 			}
-			// 			if v == light {
-			// 				return i
-			// 			}
-			// 		}
-			// 	}
-			// }
-			// part1 += f1(buttons, light)
-
-			var cacheF1 = map[int][][]int{}
-			f1 := func(buttons []int, light int) [][]int {
-				ret := [][]int{}
-				if ret, ok := cacheF1[light]; ok {
-					return ret
-				}
-				for i := range 1<<len(buttons) + 1 {
-					res, pressed := 0, []int{}
-					for btn := range len(buttons) {
-						if i>>btn&1 == 1 {
-							res ^= buttons[btn]
-							pressed = append(pressed, btn)
-						}
-					}
-					if res == light {
-						ret = append(ret, pressed)
-					}
-				}
-				return ret
-			}
-			part1 += len(slices.MinFunc(f1(buttons, light), func(a, b []int) int { return cmp.Compare(len(a), len(b)) }))
-
-			var cacheF2 = map[string]int{}
-			var f2 func([]int, []int, []int) int
-			f2 = func(buttons []int, joltages []int, target []int) int {
-				if ret, ok := cacheF2[fmt.Sprintf("%v", joltages)]; ok {
-					return ret
-				}
-				if slices.Equal(joltages, target) {
-					return 0
-				}
-				pressed := []int{math.MaxInt}
-				light := 0
-				for i, j := range joltages {
-					if j&1 == 1 {
-						light += 1 << i
-					}
-				}
-				for _, prePressed := range f1(buttons, light) {
-					newJoltages := make([]int, len(joltages))
-					copy(newJoltages, joltages)
-					for _, btn := range prePressed {
-						for i, j := range BJ[btn] {
-							newJoltages[i] -= j
-						}
-					}
-					valid := true
-					for i := range newJoltages {
-						newJoltages[i] >>= 1
-						if newJoltages[i] < 0 {
-							valid = false
-							break
-						}
-					}
-					if valid {
-						if p := f2(buttons, newJoltages, target); p != math.MaxInt {
-							pressed = append(pressed, len(prePressed)+2*p)
-						}
-					}
-				}
-				ret := slices.Min(pressed)
-				cacheF2[fmt.Sprintf("%v", joltages)] = ret
-				return ret
-			}
-			part2 += f2(buttons, joltages, make([]int, len(joltages)))
-		},
-	)
-	s.End = func(s *awk.Script) {
-		fmt.Printf("The result for part 1: %d\n", part1)
-		fmt.Printf("The result for part 2: %d\n", part2)
-	}
-
-	if err := s.Run(os.Stdin); err != nil {
+	data, err := io.ReadAll(os.Stdin)
+	if err != nil {
 		panic(err)
 	}
-}
-
-func CombinationsBitmask(n, r int) [][]int {
-	if r < 0 || r > n {
-		return nil
-	}
-	var ret [][]int
-	for mask := range 1 << n {
-		if bits.OnesCount(uint(mask)) == r {
-			var combo []int
-			for i := range n {
-				if (mask>>i)&1 == 1 {
-					combo = append(combo, i)
+	for _, line := range strings.Split(string(data), "\n") {
+		if len(line) == 0 {
+			continue
+		}
+		parts := []string{}
+		for _, p := range strings.Split(line, " ") {
+			parts = append(parts, p[1:len(p)-1])
+		}
+		lights := []int{}
+		for _, p := range strings.Split(parts[0], "") {
+			if p == "#" {
+				lights = append(lights, 1)
+			} else {
+				lights = append(lights, 0)
+			}
+		}
+		buttons := [][]int{}
+		for _, btn := range parts[1 : len(parts)-1] {
+			ints := []int{}
+			for _, p := range strings.Split(btn, ",") {
+				n, _ := strconv.Atoi(p)
+				ints = append(ints, n)
+			}
+			buttons = append(buttons, ints)
+		}
+		joltages := []int{}
+		for _, p := range strings.Split(parts[len(parts)-1], ",") {
+			n, _ := strconv.Atoi(p)
+			joltages = append(joltages, n)
+		}
+		solutions := map[string][][]int{}
+		for i := range 1 << len(buttons) {
+			res := make([]int, len(lights))
+			pressed := make([]int, len(buttons))
+			for btn, bits := range buttons {
+				if (i>>btn)&1 == 1 {
+					for _, b := range bits {
+						res[b] ^= 1
+					}
+					pressed[btn] = 1
 				}
 			}
-			ret = append(ret, combo)
+			str := ToString(res)
+			if _, ok := solutions[str]; !ok {
+				solutions[str] = [][]int{}
+			}
+			solutions[str] = append(solutions[str], pressed)
 		}
-	}
-	return ret
-}
+		res := math.MaxInt32
+		for _, x := range solutions[ToString(lights)] {
+			res = min(res, Sum(x))
+		}
+		p1 += res
 
-func GenerateCombinationsBitmask[T any](items []T, n int) [][]T {
-	N := len(items)
-	if n < 0 || n > N {
-		return nil
-	}
-	var ret [][]T
-	for mask := range 1 << N {
-		if bits.OnesCount(uint(mask)) == n {
-			var combo []T
-			for i := range N {
-				if (mask>>i)&1 == 1 {
-					combo = append(combo, items[i])
+		var fn func([]int) int
+		fn = func(target []int) int {
+			if Sum(target) == 0 {
+				return 0
+			}
+			pressed := math.MaxInt32
+			lights := make([]int, len(target))
+			for i, joltage := range target {
+				if joltage&1 == 1 {
+					lights[i] = 1
 				}
 			}
-			ret = append(ret, combo)
+			if s, ok := solutions[ToString(lights)]; ok {
+				for _, prePressed := range s {
+					newTarget := make([]int, len(target))
+					copy(newTarget, target)
+					for i, v := range prePressed {
+						if v == 1 {
+							for _, b := range buttons[i] {
+								newTarget[b] -= 1
+							}
+						}
+					}
+					if slices.ContainsFunc(newTarget, func(n int) bool {
+						return n < 0
+					}) {
+						continue
+					}
+					for i := range newTarget {
+						newTarget[i] >>= 1
+					}
+					if p := fn(newTarget); p != math.MaxInt32 {
+						pressed = min(pressed, Sum(prePressed)+2*p)
+					}
+
+				}
+			}
+			return pressed
 		}
+		p2 += fn(joltages)
 	}
-	return ret
+
+	fmt.Printf("Part 1: %d\n", p1)
+	fmt.Printf("Part 2: %d\n", p2)
 }
 
-func GenerateCombinations[T any](items []T, n int) [][]T {
-	if n < 0 {
-		return nil
+func ToString(xs []int) string {
+	var sb strings.Builder
+	for _, x := range xs {
+		sb.WriteByte('0' + byte(x))
 	}
-	var ret [][]T
-	var recurse func(startIndex int, combo []T)
+	return sb.String()
+}
 
-	// 'startIndex' controls which element we choose next, preventing duplicate orderings.
-	recurse = func(startIndex int, combo []T) {
-		if len(combo) == n {
-			x := make([]T, n)
-			copy(x, combo)
-			ret = append(ret, x)
-			return
-		}
-
-		for i := startIndex; i < len(items); i++ {
-			recurse(i, append(combo, items[i]))
-		}
+func Sum(xs []int) int {
+	sum := 0
+	for _, v := range xs {
+		sum += v
 	}
-	recurse(0, []T{})
-	return ret
+	return sum
 }

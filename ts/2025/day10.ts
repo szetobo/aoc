@@ -1,6 +1,6 @@
-let part1 = 0, part2 = 0
-for await (const line of console) {
-	if (line === "") { continue }
+let p1 = 0, p2 = 0
+const lines: string[] = (await Bun.stdin.text()).trim().split("\n")
+for (const line of lines) {
 	const parts = line.split(" ").map(x => x.slice(1, -1))
 	const lights = parts.at(0)?.split("").map(x => x === "#" ? 1 : 0)
 	const buttons = parts.slice(1, -1).map(x => x.split(",").map(Number))
@@ -17,7 +17,7 @@ for await (const line of console) {
 				for (const b of bits) {
 					res[b] ^= 1
 				}
-				pressed[btn] += 1
+				pressed[btn] = 1
 			}
 		}
 		const existing = solutions.get(res.join(""))
@@ -25,7 +25,7 @@ for await (const line of console) {
 	}
 
 	const f1 = (lights: number[]): number[][] => solutions.get(lights.join("")) ?? []
-	part1 += Math.min(...f1(lights).map(x => x.reduce((m, v) => m + v), 0))
+	p1 += Math.min(...f1(lights).map(x => x.reduce((m, v) => m + v), 0))
 
 	const cache = new Map<string, number>()
 	const f2 = (targets: number[]): number => {
@@ -44,19 +44,19 @@ for await (const line of console) {
 			}
 		}
 		for (const prePressed of f1(lights)) {
-			let newJoltages = [...targets]
+			let newTarget = [...targets]
 			for (const [i, v] of prePressed.entries()) {
 				if (v === 1) {
 					for (const b of buttons[i]!) {
-						newJoltages[b]!--
+						newTarget[b]!--
 					}
 				}
 			}
 
-			if (newJoltages.some(v => v < 0)) { continue }
+			if (newTarget.some(v => v < 0)) { continue }
 
-			newJoltages = newJoltages.map(v => v >>= 1)
-			const p = f2(newJoltages)
+			newTarget = newTarget.map(v => v >>= 1)
+			const p = f2(newTarget)
 			if (p != Number.MAX_SAFE_INTEGER) {
 				pressed = Math.min(pressed, prePressed.reduce((m, v) => m + v, 0) + 2 * p)
 			}
@@ -64,7 +64,7 @@ for await (const line of console) {
 		cache.set(targets.join(","), pressed)
 		return pressed
 	}
-	part2 += f2(joltages)
+	p2 += f2(joltages)
 }
-console.log("The result for part 1: %d", part1)
-console.log("The result for part 2: %d", part2)
+console.log("Part 1: %d", p1)
+console.log("Part 2: %d", p2)
