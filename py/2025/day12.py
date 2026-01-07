@@ -22,5 +22,5 @@ for line in lines:
         if cnt_p <= min_p and cnt_t <= ttl_t:
             p1 += 1
 
-print(f"The result for part 1: {p1}")
-print(f"The result for part 2: {p2}")
+print(f"Part 1: {p1}")
+print(f"Part 2: {p2}")

@@ -2,76 +2,57 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strconv"
-
-	"github.com/spakin/awk"
+	"strings"
 )
 
 func main() {
-	inputs := [][]int{}
-	curShape := 0
-	shapes := [][]string{}
-	shapeTiles := []int{}
+	p1, p2 := 0, 0
 
-	s := awk.NewScript()
-	s.Begin = func(s *awk.Script) { s.SetFS("") }
-	s.AppendStmt(
-		func(s *awk.Script) bool { return s.NF == 2 },
-		func(s *awk.Script) { curShape = s.F(1).Int() },
-	)
-	s.AppendStmt(
-		func(s *awk.Script) bool { return s.NF == 3 },
-		func(s *awk.Script) {
-			if len(shapes) == curShape {
-				shapes = append(shapes, []string{})
-				shapeTiles = append(shapeTiles, 0)
-			}
-			shapes[curShape] = append(shapes[curShape], s.F(0).String())
-			for _, ch := range s.F(0).String() {
-				if ch == '#' {
-					shapeTiles[curShape]++
-				}
-			}
-		},
-	)
-	s.AppendStmt(
-		func(s *awk.Script) bool { return s.NF > 3 },
-		func(s *awk.Script) {
-			ins := []int{}
-			for _, x := range regexp.MustCompile(`\d+`).FindAllString(s.F(0).String(), -1) {
-				n, _ := strconv.Atoi(x)
-				ins = append(ins, n)
-			}
-			inputs = append(inputs, ins)
-		},
-	)
-	s.End = func(s *awk.Script) {
-		part1, part2 := 0, 0
-
-		ttlTiles := 0
-		for _, cnt := range shapeTiles {
-			ttlTiles += cnt
-		}
-		for _, ins := range inputs {
-			width, height := ins[0], ins[1]
-			minP := (width / 3) * (height / 3)
-			P, T := 0, 0
-			for i, p := range ins[2 : len(ins)-1] {
-				P += p
-				T += shapeTiles[i] * p
-			}
-			if P <= minP && width*height >= T {
-				part1++
-			}
-		}
-
-		fmt.Printf("The result for part 1: %d\n", part1)
-		fmt.Printf("The result for part 2: %d\n", part2)
-	}
-
-	if err := s.Run(os.Stdin); err != nil {
+	data, err := io.ReadAll(os.Stdin)
+	if err != nil {
 		panic(err)
 	}
+	S := [][][]string{}
+	T := []int{}
+	for _, line := range strings.Split(string(data), "\n") {
+		if len(line) == 0 {
+			continue
+		}
+		if len(line) == 2 {
+			S = append(S, [][]string{})
+			T = append(T, 0)
+		} else if regexp.MustCompile(`[#.]+`).MatchString(line) {
+			S[len(S)-1] = append(S[len(S)-1], strings.Split(line, ""))
+			for _, v := range strings.Split(line, "") {
+				if v == "#" {
+					T[len(T)-1] += 1
+				}
+			}
+		} else {
+			parts := regexp.MustCompile(`\d+`).FindAllString(line, -1)
+			ints := []int{}
+			for _, v := range parts {
+				n, _ := strconv.Atoi(v)
+				ints = append(ints, n)
+			}
+			width, height, rest := ints[0], ints[1], ints[2:]
+			ttlT := width * height
+			minP := (width / 3) * (height / 3)
+			cntP, cntT := 0, 0
+			for i, v := range rest {
+				cntP += v
+				cntT += v * T[i]
+			}
+			if (cntP <= minP) && (cntT <= ttlT) {
+				p1++
+			}
+		}
+	}
+
+	fmt.Printf("Part 1: %d\n", p1)
+	fmt.Printf("Part 2: %d\n", p2)
 }

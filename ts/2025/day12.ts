@@ -1,8 +1,7 @@
-let part1 = 0, part2 = 0
+let p1 = 0, p2 = 0
 let shapes: string[][][] = []
 let shapeTiles: number[] = []
-for await (const line of console) {
-	if (line === "") { continue }
+for (const line of (await Bun.stdin.text()).trim().split("\n")) {
 	if (line.length === 2) {
 		shapes.push([])
 		shapeTiles.push(0)
@@ -17,10 +16,10 @@ for await (const line of console) {
 			const cntP = rest.reduce((m, v) => m + v, 0)
 			const cntT = rest.reduce((m, v, i) => m + v * shapeTiles[i]!, 0)
 			if (cntP <= minP && cntT <= ttlT) {
-				part1++
+				p1++
 			}
 		}
 	}
 }
-console.log("The result for part 1: %d", part1)
-console.log("The result for part 2: %d", part2)
+console.log("Part 1: %d", p1)
+console.log("Part 2: %d", p2)
