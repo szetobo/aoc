@@ -22,6 +22,9 @@ alias pyt := pytest
 alias hye := hyedit
 alias hyr := hyrun
 alias hyt := hytest
+alias nue := nuedit
+alias nur := nurun
+alias nut := nutest
 
 default: edit
 
@@ -31,10 +34,12 @@ prepare day=current_day year=current_year:
       mkdir -p ./ts/{{year}}; \
       mkdir -p ./py/{{year}}; \
       mkdir -p ./hy/{{year}}; \
+      mkdir -p ./nu/{{year}}; \
       cp -n ./go/main.go ./go/{{year}}/${name}/main.go; \
       cp -n ./ts/template.ts ./ts/{{year}}/${name}.ts; \
       cp -n ./py/template.py ./py/{{year}}/${name}.py; \
-      cp -n ./hy/template.hy ./hy/{{year}}/${name}.hy;
+      cp -n ./hy/template.hy ./hy/{{year}}/${name}.hy; \
+      cp -n ./nu/template.nu ./nu/{{year}}/${name}.nu;
 
 download day=current_day year=current_year:
     mkdir -p resources/{{year}}
@@ -50,6 +55,7 @@ edit day=current_day year=current_year:
         ./ts/{{year}}/${name}.ts \
         ./py/{{year}}/${name}.py \
         ./hy/{{year}}/${name}.hy \
+        ./nu/{{year}}/${name}.nu \
         {{inputs_dir}}/{{year}}/${name}.txt
 
 goedit day=current_day year=current_year:
@@ -99,3 +105,15 @@ hyrun day=current_day year=current_year:
 hytest day=current_day year=current_year:
     name=`printf 'day%02d' $((10#{{day}}))`; \
       uv run hy ./hy/{{year}}/${name}.hy < {{inputs_dir}}/{{year}}/${name}.sample
+
+nuedit day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      $EDITOR -O ./nu/{{year}}/${name}.nu {{inputs_dir}}/{{year}}/${name}.txt
+
+nurun day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      nu --stdin ./nu/{{year}}/${name}.nu < {{inputs_dir}}/{{year}}/${name}.txt
+
+nutest day=current_day year=current_year:
+    name=`printf 'day%02d' $((10#{{day}}))`; \
+      nu --stdin ./nu/{{year}}/${name}.nu < {{inputs_dir}}/{{year}}/${name}.sample
